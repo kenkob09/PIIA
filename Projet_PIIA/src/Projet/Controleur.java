@@ -1007,11 +1007,16 @@ public class Controleur {
 	        	file = new File(file.getPath() + ".svg");
 	        }
 	        try {
-	            SVGFormat.write(Canvas, file);
+	            SVGFormat.write(listShapes, file);
 	        } catch (IOException e) {
 	        	e.printStackTrace();
 	        }
 	    }
+	}
+	
+	@FXML 
+	protected void onLoad(ActionEvent event) {
+		
 	}
 	
 	@FXML

@@ -1,10 +1,13 @@
 package Projet;
 
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
-import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 
 import java.io.BufferedWriter;
@@ -26,32 +29,38 @@ public class SVGFormat {
      * @throws IOException si l'ecriture a echou�.
      */
     
-    public static void write(Region canvas, File file) throws IOException {
+    public static void write(ObservableList<Shape> listShapes, File file) throws IOException {
         try (Writer writer = new BufferedWriter(new FileWriter(file))) {
-            write(canvas, writer);
+            write(listShapes, writer);
         }
     }
 
-   public static void write(Region canvas, Writer writer) throws IOException {
+   public static void write(ObservableList<Shape> listShapes, Writer writer) throws IOException {
 	   String svgHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" + "<svg\n"
 				+ "    xmlns:svg=\"http://www.w3.org/2000/svg\"\n" + "    xmlns=\"http://www.w3.org/2000/svg\"\n"
 + ">\n";
 	   writer.write(svgHeader);
+	   
+	   
+	   /*
 	   Region viewport = (Region) canvas.getParent();
        writer.write(String.format("<svg xmlns=\"http://www.w3.org/2000/svg\"" +
                 " xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"%f\"" +
                 " height=\"%f\">\n", viewport.getWidth(), viewport.getHeight()));
-
-       for (Node node : canvas.getChildrenUnmodifiable()) {
-            if (node instanceof Line) {
-                write((Line) node, writer);
-            } else if (node instanceof Rectangle) {
-                write((Rectangle) node, writer);
-            } else if (node instanceof Ellipse) {
-                write((Ellipse) node, writer);
-            } else if (node instanceof Text) {
-                write((Text) node, writer);
+	   */
+	   
+       for (Shape s : listShapes) {
+            if (s.getClass()==Line.class) {
+                write((Line) s, writer);
+            } else if (s.getClass()==Rectangle.class) {
+                write((Rectangle) s, writer);
+            } else if (s.getClass()==Circle.class) {
+                write((Circle) s, writer);
             }
+            /* non traite pour polygon
+            } else if (s.getClass()==Polygon.class) {
+                write((Polygon) s, writer);
+            }*/
        }
        writer.write("</svg>\n");
 
@@ -69,16 +78,20 @@ public class SVGFormat {
                 rectangle.getX(), rectangle.getY(), rectangle.getWidth(), rectangle.getHeight()));
     }
 
-    private static void write(Ellipse ellipse, Writer writer) throws IOException {
+    private static void write(Circle circle, Writer writer) throws IOException {
         writer.write(String.format("<ellipse cx=\"%f\" cy=\"%f\" rx=\"%f\" ry=\"%f\" />\n",
-                ellipse.getCenterX(), ellipse.getCenterY(), ellipse.getRadiusX(),
-                ellipse.getRadiusY()));
+                circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
+                circle.getRadius()));
     }
-
-    private static void write(Text text, Writer writer) throws IOException {
+    
+    /* pas traite pour polygon
+    private static void write(Polygon polygon, Writer writer) throws IOException {
+    	
+    	
+    	
         writer.write(String.format("<text x=\"%f\" y=\"%f\" font-size=\"%f\">%s</text>\n",
                 text.getX(), text.getY(), text.getFont().getSize(), escape(text.getText())));
-    }
+    }*/
 
     /**
      * Escape string for XML.
