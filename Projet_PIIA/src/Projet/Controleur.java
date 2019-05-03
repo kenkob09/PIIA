@@ -1180,10 +1180,10 @@ public class Controleur {
             int temptaille =  undoHistory.size()-2;
             //System.out.println("taille"+undoHistory.size()+", temptaille "+temptaille);
             while( (temptaille >= 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
-            	pinceau = true;
             	Line actual = (Line) undoHistory.lastElement();  
                 Line precedant = (Line) undoHistory.get(temptaille);
             	if(precedant.getEndX() == actual.getStartX() &&  precedant.getEndY() == actual.getStartY()) {
+            		pinceau = true;
             		//System.out.println("precedant.fin = "+precedant.getEndX()+","+precedant.getEndY()+" actual.debut "+actual.getStartX()+", "+actual.getStartY());
         			//ajout dans la liste des suivants
                     redoHistory.push(actual);
@@ -1265,10 +1265,10 @@ public class Controleur {
             //System.out.println("taille"+redoHistory.size()+", temptaille "+temptaille);
             while( (temptaille >= 0) && (redoHistory.get(temptaille).getClass() == Line.class)) {
             	//System.out.println("while");
-            	pinceau = true;
             	Line actual = (Line) redoHistory.lastElement();  
                 Line precedant = (Line) redoHistory.get(temptaille);
             	if(actual.getEndX() == precedant.getStartX() &&  actual.getEndY() == precedant.getStartY()) {
+                	pinceau = true;
             		//System.out.println("precedant.fin = "+actual.getEndX()+","+actual.getEndY()+" actual.debut "+precedant.getStartX()+", "+precedant.getStartY());
         			//dessin
             		gc.strokeLine(actual.getStartX(), actual.getStartY(), actual.getEndX(), actual.getEndY());
