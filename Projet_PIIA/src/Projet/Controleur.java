@@ -109,12 +109,6 @@ public class Controleur {
     //Undo/Redo Historique 
 	private Stack<Shape> undoHistory = new Stack<Shape>();
 	private  Stack<Shape> redoHistory = new Stack<Shape>();
-    
-    //Pinceau
-	private Map<Rectangle,Rectangle> brushMap = new HashMap<>(); //contient key: le premier rectangle du pinceau, value: le dernier rectangle  
-	private Rectangle rectDebut;
-	private Stack<Rectangle> undoPinceauRect = new Stack<Rectangle>(); //liste des rectangle qui ont servi au dessin avec pinceau
-	private Stack<Rectangle> redoPinceauRect = new Stack<Rectangle>();
       
 
     
@@ -159,16 +153,6 @@ public class Controleur {
     //INTERFACE : PLUS DE COULEUR
     //BOUTON HELP !!
     //ENLEVER LES COMMENTAIRES INUTILES
-    
-    //LOGO?
-    
-
-    /**************           Soucis        ***********/
-    /* effacer les points qui auront servi au dessin du polygone car �a cree 
-     * un probleme sur la taille de la forme qui le precede */
-    /*****************************************************/
-    
-    
     
     /***************************************************************** Fonctions associees aux actions avec la souris *****************************************************************/
     
