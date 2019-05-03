@@ -80,11 +80,18 @@ public class Controleur {
 	private double xEnd;
 	private double yStart;
 	private double yEnd;
+	
 	//x,y pour les traces au pinceau
 	private double xMid;
 	private double yMid;
+	
+	//Liste de points pour polygone
 	private ArrayList<Double> xPoints;
 	private ArrayList<Double> yPoints;	
+	
+	//booleen pour le deplacement / redimenssionnement
+	private boolean first_time;
+	private boolean last_time;
 	
 	//liste de toutes les formes dessinees
 	//necessaires pour faire le redimensionnement et le deplacement
@@ -200,9 +207,13 @@ public class Controleur {
     			tracer_cercle();
     		}
     		else if(this.last_button == Deplacer_Button) {
+    			first_time = true;
+    			last_time = false;
     			forme_visee();
     		} 
     		else if(this.last_button == Redim_Button) {
+    			first_time = true;
+    			last_time = false;
     			forme_visee();
     		}
         }
@@ -286,7 +297,7 @@ public class Controleur {
         //Si on veut dessiner au pinceau
       	if (this.last_button == Pinceau_Button) {
       		tracer_pinceau(false,true);
-			System.out.println("\nmap "+brushMap.toString());
+			//System.out.println("\nmap "+brushMap.toString());
 			//System.out.println("rectStart"+rectDebut+"rectFin"+r);
       	}
         //Si on veut tracer une ligne
@@ -323,12 +334,14 @@ public class Controleur {
 		else if (this.last_button == Deplacer_Button){
 			System.out.println("end_trace");
 			//Shape temp = listShapes.get(indexShape);
+			last_time = true;
 			deplacement(xEnd,yEnd,indexShape);			
 		}
 		
 		//Si on veut redimensionner
 		else if (this.last_button == Redim_Button){
 			System.out.println("redim !");
+			last_time = true;
 			redim(xEnd,yEnd,indexShape);
 		}		
 		
@@ -338,20 +351,13 @@ public class Controleur {
 		if (undoHistory.size() !=0) {
 			Shape lastUndo = undoHistory.lastElement();
 			if(lastUndo.getClass() != Polygon.class) {
-				//lastUndo.setFill(gc.getFill());
 				lastUndo.setStroke(gc.getStroke());
 				lastUndo.setStrokeWidth(gc.getLineWidth());	
 				
 			}else {
-				//lastUndo.setFill(gc.getFill());
 				lastUndo.setStroke(gc.getStroke());
-				//lastUndo.setStrokeWidth(lastStrokeWidth);	
 			}
-			//System.out.println("size"+undoHistory.lastElement().getStrokeWidth());
 		}	
-		//System.out.println("\n\nlistShapes"+listShapes.toString()+"\n\n");
-		//System.out.println("\n\nundoHistory"+undoHistory.toString()+"\n\n");
-		
 	}    
 	
 	/***************************************************************** Fonctions de dessin *****************************************************************/
@@ -456,16 +462,29 @@ public class Controleur {
 
 	//Fonction qui regarde la forme qui est visee par la souris
 	public void forme_visee() {
-		System.out.println("deplacement");
+		//System.out.println("deplacement");
 		if(!listShapes.isEmpty()) {
-			System.out.println("listeShapes not empty");
+			//System.out.println("listeShapes not empty");
+			indexShape = -1;
 			int i = 0;
 			boolean found = false;
 			Shape s = listShapes.get(i);
 			while(!s.contains(xStart, yStart) && i < listShapes.size()-1) {
 				i++;
 				s = listShapes.get(i);
-				if (s.contains(xStart, yStart)) {
+				if (s.getClass()==Line.class) {
+					Line l = (Line)s;
+					//calcul du coefficient directeur de la ligne (droite)
+					double coef_dir = (l.getEndY()-l.getStartY()) / (l.getEndX() - l.getStartX());
+					double ordonnee_origine =  (coef_dir*l.getStartX()) - l.getStartY();
+					System.out.println(yStart);
+					System.out.println(coef_dir*xStart + ordonnee_origine+5);
+					if ( (yStart< (coef_dir*xStart + ordonnee_origine)+5) || (yStart> (coef_dir*xStart + ordonnee_origine)-5) ) {
+						found = true;
+						break;
+					}
+				}
+				else if (s.contains(xStart, yStart)) {
 					found = true;
 				}
 			}
@@ -473,10 +492,11 @@ public class Controleur {
 				/************ point non reconnu, reclicker ***********/
 			}else {
 				if (found) {
+					System.out.println("FORME TROUVEE");
 					indexShape = i;
 				}
 				else {
-					System.out.println("ok");
+					System.out.println("FORME NON TROUVEE");
 				}
 			}
 		}else {
@@ -486,28 +506,30 @@ public class Controleur {
 	
 	//Fonction pour le deplacement de formes
 	public void deplacement(double xE, double yE, int index ){
-        Shape s = listShapes.get(index);
-       
-    	double distanceX = xE-xStart;
-    	double distanceY = yE-yStart;
-        
-        if(s.getClass() == Line.class) {
-        	Line tempLine = (Line) s;
-        	deplacer_ligne(tempLine,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Rectangle.class) {
-        	Rectangle rect = (Rectangle) s;
-        	deplacer_rectangle(rect,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Circle.class) {
-        	Circle cerc = (Circle) s;
-        	deplacer_cercle(cerc,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Polygon.class){
-    		Polygon poly= (Polygon) s;
-    		deplacer_polygone(poly,index,distanceX,distanceY);
-        }
-        refresh();
+		if (index!=-1) {
+	        Shape s = listShapes.get(index);
+	       
+	    	double distanceX = xE-xStart;
+	    	double distanceY = yE-yStart;
+	        
+	        if(s.getClass() == Line.class) {
+	        	Line tempLine = (Line) s;
+	        	deplacer_ligne(tempLine,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Rectangle.class) {
+	        	Rectangle rect = (Rectangle) s;
+	        	deplacer_rectangle(rect,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Circle.class) {
+	        	Circle cerc = (Circle) s;
+	        	deplacer_cercle(cerc,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Polygon.class){
+	    		Polygon poly= (Polygon) s;
+	    		deplacer_polygone(poly,index,distanceX,distanceY);
+	        }
+	        refresh();
+		}
 	}
 	
 	//Fonction pour deplacer une ligne
@@ -528,8 +550,14 @@ public class Controleur {
         temp.setStroke(l.getStroke());
         temp.setStrokeWidth(l.getStrokeWidth());
     	listShapes.set(index,temp);
-    	undoHistory.push(temp);
-        	
+    	if (first_time) {
+        	undoHistory.push(temp);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(temp);
+        	last_time = false;
+    	}
 	}
 	
 	//Fonction pour deplacer un rectangle
@@ -546,9 +574,15 @@ public class Controleur {
         rect.setWidth(r.getWidth());
         rect.setStroke(r.getStroke());
     	rect.setStrokeWidth(r.getStrokeWidth());
-    	rect.setFill(r.getFill());
     	listShapes.set(index,rect);
-    	undoHistory.push(rect);
+    	if (first_time) {
+        	undoHistory.push(rect);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(rect);
+        	last_time = false;
+    	}
     }
 	
 	//Fonction pour deplacer un cercle
@@ -563,9 +597,15 @@ public class Controleur {
         cerc.setRadius(c.getRadius());
         cerc.setStroke(c.getStroke());
     	cerc.setStrokeWidth(c.getStrokeWidth());
-    	cerc.setFill(c.getFill());
         listShapes.set(index,cerc);
-        undoHistory.push(cerc);
+    	if (first_time) {
+        	undoHistory.push(cerc);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(cerc);
+        	last_time = false;
+    	}
 	}
 	
 	//Fonction pour deplacer un polygone
@@ -594,9 +634,15 @@ public class Controleur {
         }		
         poly.setStroke(p.getStroke());
     	poly.setStrokeWidth(p.getStrokeWidth());
-    	poly.setFill(p.getFill());
         listShapes.set(index,poly);
-        undoHistory.push(poly);
+    	if (first_time) {
+        	undoHistory.push(poly);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(poly);
+        	last_time = false;
+    	}
 	}
 	
 	
@@ -604,27 +650,29 @@ public class Controleur {
 
 	
 	public void redim(double xE, double yE, int index ){
-        Shape s = listShapes.get(index);
-    	double distanceX = xE-xStart;
-    	double distanceY = yE-yStart;
-    	//onUndo();
-        if(s.getClass() == Line.class) {
-        	Line tempLine = (Line) s;
-        	redim_ligne(tempLine,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Rectangle.class) {
-        	Rectangle rect = (Rectangle) s;
-        	redim_rectangle(rect,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Circle.class) {
-        	Circle cerc = (Circle) s;
-        	redim_cercle(cerc,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Polygon.class){
-    		Polygon poly= (Polygon) s;
-    		redim_polygone(poly,index,distanceX,distanceY);
-        }
-        refresh();
+		if (index!=-1) {
+	        Shape s = listShapes.get(index);
+	    	double distanceX = xE-xStart;
+	    	double distanceY = yE-yStart;
+	    	//onUndo();
+	        if(s.getClass() == Line.class) {
+	        	Line tempLine = (Line) s;
+	        	redim_ligne(tempLine,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Rectangle.class) {
+	        	Rectangle rect = (Rectangle) s;
+	        	redim_rectangle(rect,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Circle.class) {
+	        	Circle cerc = (Circle) s;
+	        	redim_cercle(cerc,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Polygon.class){
+	    		Polygon poly= (Polygon) s;
+	    		redim_polygone(poly,index,distanceX,distanceY);
+	        }
+	        refresh();
+		}
 	}
 	
 	public void redim_ligne(Line l, int index, double distanceX, double distanceY) {
@@ -647,8 +695,14 @@ public class Controleur {
         temp.setStroke(l.getStroke());
         temp.setStrokeWidth(l.getStrokeWidth());
     	listShapes.set(index,temp);
-    	undoHistory.push(temp);
-	}
+    	if (first_time) {
+        	undoHistory.push(temp);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(temp);
+        	last_time = false;
+    	}	}
 	
 	public void redim_rectangle(Rectangle r, int index, double distanceX, double distanceY) {
 		double r_xMoy = (2*r.getX()+r.getWidth())/2;
@@ -683,12 +737,17 @@ public class Controleur {
 			temp.setWidth(r.getWidth() + distanceX);
 			temp.setHeight(r.getHeight() + distanceY);
 		}
-		rect.setFill(r.getFill());
         temp.setStroke(r.getStroke());
         temp.setStrokeWidth(r.getStrokeWidth());
     	listShapes.set(index,temp);
-    	undoHistory.push(temp);
-	}
+    	if (first_time) {
+        	undoHistory.push(temp);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(temp);
+        	last_time = false;
+    	}	}
 	
 	
 	public void redim_cercle(Circle c, int index, double distanceX, double distanceY) {
@@ -725,12 +784,17 @@ public class Controleur {
 			temp.setCenterX(centerX-temp.getRadius()/2);
 			temp.setCenterY(centerY-temp.getRadius()/2);
 		}
-		temp.setFill(c.getFill());
         temp.setStroke(c.getStroke());
         temp.setStrokeWidth(c.getStrokeWidth());
     	listShapes.set(index,temp);
-    	undoHistory.push(temp);
-	}
+    	if (first_time) {
+        	undoHistory.push(temp);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(temp);
+        	last_time = false;
+    	}	}
 	
 	public void redim_polygone(Polygon p, int index, double distanceX, double distanceY) {
 		//recuperation des point
@@ -769,9 +833,15 @@ public class Controleur {
         }		
         poly.setStroke(p.getStroke());
     	poly.setStrokeWidth(p.getStrokeWidth());
-    	poly.setFill(p.getFill());
         listShapes.set(index,poly);
-        undoHistory.push(poly);
+    	if (first_time) {
+        	undoHistory.push(poly);
+        	first_time = false;
+    	}        	
+    	if (last_time) {
+        	undoHistory.push(poly);
+        	last_time = false;
+    	}	
 	}
 	
 	/***************************************************************** Fonctions de remplissage *****************************************************************/
@@ -1022,7 +1092,7 @@ public class Controleur {
             //avec pinceau
             int temptaille =  undoHistory.size()-2;
             //System.out.println("taille"+undoHistory.size()+", temptaille "+temptaille);
-            while( (temptaille != 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
+            while( (temptaille > 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
             	pinceau = true;
             	Line actual = (Line) undoHistory.lastElement();  
                 Line precedant = (Line) undoHistory.get(temptaille);
@@ -1090,7 +1160,6 @@ public class Controleur {
             //mettre a jour
             gc.setLineWidth(shape.getStrokeWidth());
             gc.setStroke(shape.getStroke());
-            //gc.setFill(shape.getFill());
             //ajouter a la liste des dessins
             listShapes.add(shape);
             redoShape(shape);
@@ -1106,14 +1175,14 @@ public class Controleur {
 			boolean pinceau = false;
             Line tempLine = (Line) shape;
             int temptaille =  redoHistory.size()-2;
-            System.out.println("taille"+redoHistory.size()+", temptaille "+temptaille);
+            //System.out.println("taille"+redoHistory.size()+", temptaille "+temptaille);
             while( (temptaille > 0) && (redoHistory.get(temptaille).getClass() == Line.class)) {
-            	System.out.println("while");
+            	//System.out.println("while");
             	pinceau = true;
             	Line actual = (Line) redoHistory.lastElement();  
                 Line precedant = (Line) redoHistory.get(temptaille);
             	if(actual.getEndX() == precedant.getStartX() &&  actual.getEndY() == precedant.getStartY()) {
-            		System.out.println("precedant.fin = "+actual.getEndX()+","+actual.getEndY()+" actual.debut "+precedant.getStartX()+", "+precedant.getStartY());
+            		//System.out.println("precedant.fin = "+actual.getEndX()+","+actual.getEndY()+" actual.debut "+precedant.getStartX()+", "+precedant.getStartY());
         			//dessin
             		gc.strokeLine(actual.getStartX(), actual.getStartY(), actual.getEndX(), actual.getEndY());
             		//ajout dans la liste des suivants
@@ -1177,7 +1246,6 @@ public class Controleur {
     		undoHistory.push(tempPoly);
     	}
         Shape lastUndo = undoHistory.lastElement();
-        //lastUndo.setFill(gc.getFill());
         lastUndo.setStroke(gc.getStroke());
         lastUndo.setStrokeWidth(gc.getLineWidth());	 	
 	}
@@ -1219,19 +1287,14 @@ public class Controleur {
         gc.setStroke(shape.getStroke());
             if(shape.getClass() == Line.class) {
                 Line temp = (Line) shape;                
-                //gc.setFill(temp.getFill());
                 gc.strokeLine(temp.getStartX(), temp.getStartY(), temp.getEndX(), temp.getEndY());
             }
             else if(shape.getClass() == Rectangle.class) {
                 Rectangle temp = (Rectangle) shape;
-                //gc.setFill(temp.getFill());
-                //gc.fillRect(temp.getX(), temp.getY(), temp.getWidth(), temp.getHeight());
                 gc.strokeRect(temp.getX(), temp.getY(), temp.getWidth(), temp.getHeight());
             }
             else if(shape.getClass() == Circle.class) {
                 Circle temp = (Circle) shape;
-                //gc.setFill(temp.getFill());
-                //gc.fillOval(temp.getCenterX(), temp.getCenterY(), temp.getRadius(), temp.getRadius());
                 gc.strokeOval(temp.getCenterX(), temp.getCenterY(), temp.getRadius(), temp.getRadius());
             }
             else if(shape.getClass() == Polygon.class) {

@@ -112,7 +112,7 @@
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <TextField fx:id="Pinceau_Size_Champs" prefHeight="25.0" prefWidth="133.0" text="10" />
+                              <TextField fx:id="Pinceau_Size_Champs" prefHeight="25.0" prefWidth="133.0" text="5" />
                               <Button fx:id="Gomme_Button" mnemonicParsing="false" onAction="#set_eraser" prefHeight="30.0" prefWidth="30.0">
                                  <graphic>
                                     <ImageView fitHeight="35.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
