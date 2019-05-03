@@ -6,6 +6,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -33,6 +36,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.MenuItem;
 
 import java.awt.Point;
 import java.io.File;
@@ -69,6 +73,10 @@ public class Controleur {
 	@FXML private GridPane Whole_Grid_Pane;
 	@FXML private Button Deplacer_Button;
 	@FXML private Button Redim_Button;
+	@FXML private MenuItem MenuItem_Sauver;
+	@FXML private MenuItem MenuItem_Ouvrir;
+	@FXML private MenuItem MenuItem_Nouv;
+	@FXML private MenuItem MenuItem_Quitter;
 	
 	/***************************************************************** Attributs de classe ******************************************************************/
 	
@@ -133,6 +141,10 @@ public class Controleur {
         Canvas.setOnMouseReleased(e -> {end_trace(e, gc);});
         //Lorsqu'on drag sur le canvas
         Canvas.setOnMouseDragged(e -> {drag_trace(e, gc);});
+        this.MenuItem_Sauver.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
+        this.MenuItem_Ouvrir.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
+        this.MenuItem_Nouv.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
+        this.MenuItem_Quitter.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
     }
     
     
