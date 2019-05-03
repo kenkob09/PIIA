@@ -598,19 +598,14 @@ public class Controleur {
 	//Fonction pour deplacer un polygone
 	public void deplacer_polygone(Polygon p, int index, double distanceX, double distanceY) {
 		//recuperation des points + calcul des nouvelles positions
-		List<Double> points = p.getPoints();
 	    int          taille = p.getPoints().size() / 2;
 	    double[]     pointsX = new double[taille];
 	    double[]     pointsY = new double[taille];
-	    int          count = 0;
-	    for (int j = 0 ; j < points.size() ; j++) {
-	        if (j % 2 == 0) {
-	            pointsX[count] = points.get(j)+distanceX;
-	        } else {
-	            pointsY[count] = points.get(j)+distanceY;
-	            count++;
-	        }
-	    }
+		get_points_from_polygone (pointsX, pointsY, p);
+		for(int i=0; i<pointsX.length;i++) {
+			pointsX[i]=pointsX[i]+distanceX;
+			pointsY[i]=pointsY[i]+distanceY;
+		}
 	    //ajout dans la liste
         Polygon poly = new Polygon();
         int iter = 0;
@@ -632,6 +627,18 @@ public class Controleur {
     	}
 	}
 	
+	public void get_points_from_polygone (double[] pointsX, double[] pointsY, Polygon p) {
+		List<Double> points = p.getPoints();
+	    int          count = 0;
+	    for (int j = 0 ; j < points.size() ; j++) {
+	        if (j % 2 == 0) {
+	            pointsX[count] = points.get(j);
+	        } else {
+	            pointsY[count] = points.get(j);
+	            count++;
+	        }
+	    }
+	}
 	
 	/***************************************************************** Fonctions de redimenssionnement *****************************************************************/
 
@@ -783,19 +790,10 @@ public class Controleur {
 	
 	public void redim_polygone(Polygon p, int index, double distanceX, double distanceY) {
 		//recuperation des point
-		List<Double> points = p.getPoints();
-		int          taille = p.getPoints().size() / 2;
+	    int          taille = p.getPoints().size() / 2;
 	    double[]     pointsX = new double[taille];
 	    double[]     pointsY = new double[taille];
-	    int          count = 0;
-	    for (int j = 0 ; j < points.size() ; j++) {
-	        if (j % 2 == 0) {
-	            pointsX[count] = points.get(j);
-	        } else {
-	            pointsY[count] = points.get(j);
-	            count++;
-	        }
-	    }
+		get_points_from_polygone (pointsX, pointsY, p);
 	    //On recherche le points du polygone le plus proche de la ou on a clique avec la souris
 	    int indice=0;
 	    double distance = Math.abs(pointsX[0]-xStart)+Math.abs(pointsY[0]-yStart);
@@ -865,19 +863,10 @@ public class Controleur {
 	        else if(stocked_shape.getClass() == Polygon.class){
 	    		Polygon poly= (Polygon) stocked_shape;
 	    		//recuperation des point
-	    		List<Double> points = poly.getPoints();
-	    		int          taille = poly.getPoints().size() / 2;
+	    	    int          taille = poly.getPoints().size() / 2;
 	    	    double[]     pointsX = new double[taille];
 	    	    double[]     pointsY = new double[taille];
-	    	    int          count = 0;
-	    	    for (int j = 0 ; j < points.size() ; j++) {
-	    	        if (j % 2 == 0) {
-	    	            pointsX[count] = points.get(j);
-	    	        } else {
-	    	            pointsY[count] = points.get(j);
-	    	            count++;
-	    	        }
-	    	    }
+	    		get_points_from_polygone (pointsX, pointsY, poly);
 	    	    //Recherche du point le plus haut a gauche
 	    	    int indice = 0;
 	    	    double min = pointsX[0]+pointsY[0];
