@@ -80,6 +80,10 @@ public class Controleur {
 	private double xEnd;
 	private double yStart;
 	private double yEnd;
+	//x,y pour les traces au pinceau
+	private double xMid;
+	private double yMid;
+	
 	private ArrayList<Double> xPoints;
 	private ArrayList<Double> yPoints;	
 	
@@ -360,6 +364,31 @@ public class Controleur {
 	/***************************************************************** Fonctions de dessin *****************************************************************/
 	
 	public void tracer_pinceau(boolean first_time, boolean last_time) {
+		if (first_time) {
+			xMid = xStart;
+			yMid = yStart;
+		}
+		line.setStartX(xMid);
+		line.setEndX(xEnd);
+		line.setStartY(yMid);
+		line.setEndY(yEnd);
+		gc.strokeLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+		xMid = xEnd;
+		yMid = yEnd;
+		Line l = new Line(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+		l.setFill(color);
+        l.setStrokeWidth(size);
+        l.setStroke(color);
+        //On ajoute le rectangle dessine dans les differentes piles
+        listShapes.add(l); 
+        undoHistory.push(l);
+        //undoPinceauRect.add(l);
+        //On incremente le nombre de rectangle dessine
+		countPinceauRect++;
+		
+		
+		
+		/*
     	rect.setWidth(size/2); //largeur du carre
         rect.setHeight(size/2);//hauteur
         rect.setX(xEnd); 
@@ -378,12 +407,13 @@ public class Controleur {
         undoPinceauRect.add(r);
         //On incremente le nombre de rectangle dessine
 		countPinceauRect++;
+		
 		if (first_time) {
 			rectDebut = r; //rectangle du debut du dessin
 		}
 		if (last_time) {
 			brushMap.put(r, rectDebut); //ajouter le dernier rectangle du dessin comme cl� et celui du debut comme valeur
-		}
+		}*/
 	}
 	
 	public void tracer_ligne() {
@@ -433,8 +463,8 @@ public class Controleur {
 	public void tracer_polygone() {		
 		//Si on a finit de tracer le polygone (on est quasiment revenu sur le point de depart)
 		if ((this.xPoints.size()>1)&&(this.yPoints.size()>1)&&(Math.abs(xStart-this.xPoints.get(0))<6)&&(Math.abs(yStart-this.yPoints.get(0))<6)) {
+			gc.setLineWidth(Double.parseDouble(Pinceau_Size_Champs.getText()));
 			gc.strokePolygon(double_array_to_list(xPoints), double_array_to_list(yPoints), xPoints.size());
-			
             //ajout dans le undoHistory
             Polygon poly = new Polygon();
             int x = 0;
@@ -450,7 +480,6 @@ public class Controleur {
 			//On vide les deux lists une fois qu'on a trace le polygone
 			xPoints.clear();
 			yPoints.clear();
-			gc.setLineWidth(Double.parseDouble(Pinceau_Size_Champs.getText()));
 		}
 		else {
 			//On ajoute les coordonnees du nouveau point dans le tableau
@@ -469,16 +498,25 @@ public class Controleur {
 		System.out.println("deplacement");
 		if(!listShapes.isEmpty()) {
 			System.out.println("listeShapes not empty");
-			int i =0;
+			int i = 0;
+			boolean found = false;
 			Shape s = listShapes.get(i);
 			while(!s.contains(xStart, yStart) && i < listShapes.size()-1) {
 				i++;
 				s = listShapes.get(i);
+				if (s.contains(xStart, yStart)) {
+					found = true;
+				}
 			}
 			if(i>= listShapes.size()) {
 				/************ point non reconnu, reclicker ***********/
 			}else {
-				indexShape = i;
+				if (found) {
+					indexShape = i;
+				}
+				else {
+					System.out.println("ok");
+				}
 			}
 		}else {
 			/*** aucune forme a deplacer ***/
