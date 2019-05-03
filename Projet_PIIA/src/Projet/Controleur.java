@@ -379,8 +379,8 @@ public class Controleur {
         l.setStrokeWidth(size);
         l.setStroke(color);
         //On ajoute le rectangle dessine dans les differentes piles
-        listShapes.add(l); 
-        undoHistory.push(l);
+    	listShapes.add(l); 
+    	undoHistory.push(l);
 	}
 	
 	public void tracer_ligne() {
@@ -462,42 +462,19 @@ public class Controleur {
 
 	//Fonction qui regarde la forme qui est visee par la souris
 	public void forme_visee() {
-		//System.out.println("deplacement");
+		System.out.println("deplacement");
 		if(!listShapes.isEmpty()) {
-			//System.out.println("listeShapes not empty");
-			indexShape = -1;
-			int i = 0;
-			boolean found = false;
+			System.out.println("listeShapes not empty");
+			int i =0;
 			Shape s = listShapes.get(i);
 			while(!s.contains(xStart, yStart) && i < listShapes.size()-1) {
 				i++;
 				s = listShapes.get(i);
-				if (s.getClass()==Line.class) {
-					Line l = (Line)s;
-					//calcul du coefficient directeur de la ligne (droite)
-					double coef_dir = (l.getEndY()-l.getStartY()) / (l.getEndX() - l.getStartX());
-					double ordonnee_origine =  (coef_dir*l.getStartX()) - l.getStartY();
-					System.out.println(yStart);
-					System.out.println(coef_dir*xStart + ordonnee_origine+5);
-					if ( (yStart< (coef_dir*xStart + ordonnee_origine)+5) || (yStart> (coef_dir*xStart + ordonnee_origine)-5) ) {
-						found = true;
-						break;
-					}
-				}
-				else if (s.contains(xStart, yStart)) {
-					found = true;
-				}
 			}
 			if(i>= listShapes.size()) {
 				/************ point non reconnu, reclicker ***********/
 			}else {
-				if (found) {
-					System.out.println("FORME TROUVEE");
-					indexShape = i;
-				}
-				else {
-					System.out.println("FORME NON TROUVEE");
-				}
+				indexShape = i;
 			}
 		}else {
 			/*** aucune forme a deplacer ***/
@@ -792,7 +769,7 @@ public class Controleur {
         	first_time = false;
     	}        	
     	if (last_time) {
-        	undoHistory.push(temp);
+        	//undoHistory.push(temp);
         	last_time = false;
     	}	}
 	
@@ -1027,6 +1004,13 @@ public class Controleur {
         }		
 	}
 	
+	
+	@FXML
+	protected void onSave(ActionEvent event) {
+
+	}
+	
+	/*
 	@FXML
 	protected void onSave(ActionEvent event) {
 		FileChooser fileChooser = new FileChooser();
@@ -1047,7 +1031,7 @@ public class Controleur {
 	        	e.printStackTrace();
 	        }
 	    }
-	}
+	}*/
 	
 	@FXML
 	protected void onExit() {
