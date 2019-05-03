@@ -67,6 +67,9 @@ public class Controleur {
 	@FXML private Button Rectangle_Button;
 	@FXML private Button Cercle_Button;
 	@FXML private Button Polygone_Button; //faire un affichage explicatif pour le polygone
+	@FXML private Button Copier_Button;
+	@FXML private Button Coller_Button;
+	@FXML private Button Couper_Button;
 	@FXML private ColorPicker Color_Picker;	
 	@FXML private Button Start_Button;
 	@FXML private Pane Start_Pane;
@@ -211,6 +214,16 @@ public class Controleur {
     			first_time = true;
     			last_time = false;
     			forme_visee();
+    		}
+    		else if(this.last_button == Copier_Button) {
+    			forme_visee();
+    		}
+    		/*else if(this.last_button == Couper_Button) {
+    			forme_visee();
+    			couper();
+    		}*/
+    		else if(this.last_button == Coller_Button) {
+    			coller();
     		}
         }
 	}
@@ -479,30 +492,28 @@ public class Controleur {
 	
 	//Fonction pour le deplacement de formes
 	public void deplacement(double xE, double yE, int index ){
-		if (index!=-1) {
-	        Shape s = listShapes.get(index);
-	       
-	    	double distanceX = xE-xStart;
-	    	double distanceY = yE-yStart;
-	        
-	        if(s.getClass() == Line.class) {
-	        	Line tempLine = (Line) s;
-	        	deplacer_ligne(tempLine,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Rectangle.class) {
-	        	Rectangle rect = (Rectangle) s;
-	        	deplacer_rectangle(rect,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Circle.class) {
-	        	Circle cerc = (Circle) s;
-	        	deplacer_cercle(cerc,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Polygon.class){
-	    		Polygon poly= (Polygon) s;
-	    		deplacer_polygone(poly,index,distanceX,distanceY);
-	        }
-	        refresh();
-		}
+        Shape s = listShapes.get(index);
+       
+    	double distanceX = xE-xStart;
+    	double distanceY = yE-yStart;
+        
+        if(s.getClass() == Line.class) {
+        	Line tempLine = (Line) s;
+        	deplacer_ligne(tempLine,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Rectangle.class) {
+        	Rectangle rect = (Rectangle) s;
+        	deplacer_rectangle(rect,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Circle.class) {
+        	Circle cerc = (Circle) s;
+        	deplacer_cercle(cerc,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Polygon.class){
+    		Polygon poly= (Polygon) s;
+    		deplacer_polygone(poly,index,distanceX,distanceY);
+        }
+        refresh();
 	}
 	
 	//Fonction pour deplacer une ligne
@@ -623,29 +634,27 @@ public class Controleur {
 
 	
 	public void redim(double xE, double yE, int index ){
-		if (index!=-1) {
-	        Shape s = listShapes.get(index);
-	    	double distanceX = xE-xStart;
-	    	double distanceY = yE-yStart;
-	    	//onUndo();
-	        if(s.getClass() == Line.class) {
-	        	Line tempLine = (Line) s;
-	        	redim_ligne(tempLine,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Rectangle.class) {
-	        	Rectangle rect = (Rectangle) s;
-	        	redim_rectangle(rect,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Circle.class) {
-	        	Circle cerc = (Circle) s;
-	        	redim_cercle(cerc,index,distanceX,distanceY);
-	        }
-	        else if(s.getClass() == Polygon.class){
-	    		Polygon poly= (Polygon) s;
-	    		redim_polygone(poly,index,distanceX,distanceY);
-	        }
-	        refresh();
-		}
+        Shape s = listShapes.get(index);
+    	double distanceX = xE-xStart;
+    	double distanceY = yE-yStart;
+    	//onUndo();
+        if(s.getClass() == Line.class) {
+        	Line tempLine = (Line) s;
+        	redim_ligne(tempLine,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Rectangle.class) {
+        	Rectangle rect = (Rectangle) s;
+        	redim_rectangle(rect,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Circle.class) {
+        	Circle cerc = (Circle) s;
+        	redim_cercle(cerc,index,distanceX,distanceY);
+        }
+        else if(s.getClass() == Polygon.class){
+    		Polygon poly= (Polygon) s;
+    		redim_polygone(poly,index,distanceX,distanceY);
+        }
+        refresh();
 	}
 	
 	public void redim_ligne(Line l, int index, double distanceX, double distanceY) {
@@ -904,7 +913,44 @@ public class Controleur {
 		return res;
 	}
     
+	/***************************************************************** Fonctions Copier/Coller/Coupe *****************************************************************/
 	
+	//Fonction pour coller
+	public void coller() {
+		Shape s = listShapes.get(indexShape);
+        if(s.getClass() == Line.class) {
+        	Line tempLine = (Line) s;
+        	//listShapes.add(new Line(tempLine.getStartX(), tempLine.getStartY(), tempLine.getEndX(), tempLine.getEndY()) );
+        	double delta_x = tempLine.getEndX() - tempLine.getStartX();
+        	double delta_y = tempLine.getEndY() - tempLine.getStartY();      
+        	Line l = new Line(xStart, yStart, xStart+delta_x, yStart+delta_y);
+        	l.setStroke(tempLine.getStroke());
+        	l.setStrokeWidth(tempLine.getStrokeWidth());
+        	undoHistory.push(l);
+        	listShapes.add(l);
+        }
+        else if(s.getClass() == Rectangle.class) {
+        	Rectangle rect = (Rectangle) s;
+        	Rectangle r = new Rectangle(xStart, yStart, rect.getWidth(), rect.getHeight());
+        	r.setStroke(rect.getStroke());
+        	r.setStrokeWidth(rect.getStrokeWidth());
+        	undoHistory.push(r);
+        	listShapes.add(r);        
+        }
+        else if(s.getClass() == Circle.class) {
+        	Circle cerc = (Circle) s;
+        	Circle c = new Circle(xStart, yStart, cerc.getRadius());
+        	c.setStroke(cerc.getStroke());
+        	c.setStrokeWidth(cerc.getStrokeWidth());
+        	undoHistory.push(c);
+        	listShapes.add(c);        
+        }
+        /*
+        else if(s.getClass() == Polygon.class){
+    		Polygon poly= (Polygon) s;
+        }*/
+        refresh();
+	}
 	
 	/***************************************************************** Fonctions pour les boutons *****************************************************************/
 	
@@ -953,12 +999,26 @@ public class Controleur {
     //Fonction appelee lorsqu'on appuie sur le bouton deplacement
     public void on_Move() {
         this.last_button = Deplacer_Button;
-        /***** clicker sur un point de la forme a deplacer ******/
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton redimensionner  
     public void set_redim() {
     	this.last_button = Redim_Button;
+    }
+    
+    //Fonction appelee lorsqu'on appuie sur le bouton copier  
+    public void set_copier() {
+    	this.last_button = Copier_Button;
+    }
+    
+    //Fonction appelee lorsqu'on appuie sur le bouton coller  
+    public void set_coller() {
+    	this.last_button = Coller_Button;
+    }
+    
+    //Fonction appelee lorsqu'on appuie sur le bouton couper  
+    public void set_couper() {
+    	this.last_button = Couper_Button;
     }
     
     //Fonction de sauvegarde d'image
@@ -977,7 +1037,7 @@ public class Controleur {
     }
 	
     
-    /***************** Menu **********************/
+    /************************************************************************** Menu *****************************************************************/
 	
     @FXML
 	protected void onCreateFile() {
@@ -1009,10 +1069,7 @@ public class Controleur {
 	    fileChooser.setInitialFileName(".");
 	    fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(
 	               "Scalable Vector Graphics (*.svg)", "*.svg"));
-	    
-	    
 	    File file = fileChooser.showSaveDialog(Canvas.getScene().getWindow());
-
 	    if (file != null) {
 	    	// Add .svg extension if none.
 	        if (!file.getName().contains(".")) {
@@ -1028,7 +1085,13 @@ public class Controleur {
 	
 	@FXML 
 	protected void onLoad(ActionEvent event) {
-		
+		/**FileChooser fileChooser = new FileChooser();
+	    fileChooser.setTitle("Save file");
+	    fileChooser.setInitialFileName(".");
+	    fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(
+	               "Scalable Vector Graphics (*.svg)", "*.svg"));
+	    File file = fileChooser.showSaveDialog(Canvas.getScene().getWindow());
+	    **/
 	}
 	
 	@FXML
@@ -1074,7 +1137,7 @@ public class Controleur {
             //avec pinceau
             int temptaille =  undoHistory.size()-2;
             //System.out.println("taille"+undoHistory.size()+", temptaille "+temptaille);
-            while( (temptaille > 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
+            while( (temptaille >= 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
             	pinceau = true;
             	Line actual = (Line) undoHistory.lastElement();  
                 Line precedant = (Line) undoHistory.get(temptaille);
@@ -1158,7 +1221,7 @@ public class Controleur {
             Line tempLine = (Line) shape;
             int temptaille =  redoHistory.size()-2;
             //System.out.println("taille"+redoHistory.size()+", temptaille "+temptaille);
-            while( (temptaille > 0) && (redoHistory.get(temptaille).getClass() == Line.class)) {
+            while( (temptaille >= 0) && (redoHistory.get(temptaille).getClass() == Line.class)) {
             	//System.out.println("while");
             	pinceau = true;
             	Line actual = (Line) redoHistory.lastElement();  

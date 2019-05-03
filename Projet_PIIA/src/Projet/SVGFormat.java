@@ -79,7 +79,7 @@ public class SVGFormat {
     }
 
     private static void write(Circle circle, Writer writer) throws IOException {
-        writer.write(String.format("<ellipse cx=\"%f\" cy=\"%f\" rx=\"%f\" ry=\"%f\" />\n",
+        writer.write(String.format("<circle cx=\"%f\" cy=\"%f\" rx=\"%f\" ry=\"%f\" />\n",
                 circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
                 circle.getRadius()));
     }
