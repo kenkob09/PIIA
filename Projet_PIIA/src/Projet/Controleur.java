@@ -83,7 +83,6 @@ public class Controleur {
 	//x,y pour les traces au pinceau
 	private double xMid;
 	private double yMid;
-	
 	private ArrayList<Double> xPoints;
 	private ArrayList<Double> yPoints;	
 	
@@ -106,8 +105,6 @@ public class Controleur {
     
     //Pinceau
 	private Map<Rectangle,Rectangle> brushMap = new HashMap<>(); //contient key: le premier rectangle du pinceau, value: le dernier rectangle  
-	private int countPinceauRect = 0; //le nombre de rectangle cree lors du dessin avec pinceau
-	private double indiceFinPinceau = -1;
 	private Rectangle rectDebut;
 	private Stack<Rectangle> undoPinceauRect = new Stack<Rectangle>(); //liste des rectangle qui ont servi au dessin avec pinceau
 	private Stack<Rectangle> redoPinceauRect = new Stack<Rectangle>();
@@ -123,8 +120,10 @@ public class Controleur {
     
     //Initialisation
     public void initialize() {    
+    	//On initialise la couleur
+    	Color_Picker.setValue(Color.BLACK);
     	//Par defaut, le pinceau est selectionne
-    	this.last_button = null;
+    	this.last_button = Pinceau_Button;
     	//On recupere le contexte graphique
         gc = Canvas.getGraphicsContext2D();
         //Lorsqu'on clique sur le canvas
@@ -164,8 +163,6 @@ public class Controleur {
     
     
     
-    
-    
     /***************************************************************** Fonctions associees aux actions avec la souris *****************************************************************/
     
     //Fonction appelee lorsqu'on clique sur le canvas avec la souris
@@ -187,10 +184,7 @@ public class Controleur {
         	tracer_pinceau(true,false);
 		}
         else {
-        	//On reinitialise le nombre de rectangles dessines avec le pinceau
-        	countPinceauRect = 0;
         	if(this.last_button == Gomme_Button) {
-    			/////////////////////////////FAIRE COMME LE PINCEAU
     			gc.clearRect(xStart-size / 2, yStart-size / 2, size, size);
     		}
     		else if(this.last_button == Sceau_Button) {
@@ -224,7 +218,6 @@ public class Controleur {
 			tracer_pinceau(false,false);
 		}
 		//Si on veut effacer
-		/////////////////////////FAIRE COMME LE PINCEAU
 		else if (this.last_button == Gomme_Button) {
 			gc.clearRect(xEnd-size / 2, yEnd-size / 2, size, size);
 	    }
@@ -382,37 +375,6 @@ public class Controleur {
         //On ajoute le rectangle dessine dans les differentes piles
         listShapes.add(l); 
         undoHistory.push(l);
-        //undoPinceauRect.add(l);
-        //On incremente le nombre de rectangle dessine
-		countPinceauRect++;
-		
-		
-		/*
-    	rect.setWidth(size/2); //largeur du carre
-        rect.setHeight(size/2);//hauteur
-        rect.setX(xEnd); 
-        rect.setY(yEnd);
-        System.out.println("rectStart "+xEnd+ ","+ yEnd);
-        gc.fillRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); //remplissage
-        gc.strokeRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); 	        
-        //ajout a la liste des dessins
-        Rectangle r = new Rectangle(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-        r.setFill(color);
-        r.setStrokeWidth(size);
-        r.setStroke(color);
-        //On ajoute le rectangle dessine dans les differentes piles
-        listShapes.add(r); 
-        undoHistory.push(r);
-        undoPinceauRect.add(r);
-        //On incremente le nombre de rectangle dessine
-		countPinceauRect++;
-		
-		if (first_time) {
-			rectDebut = r; //rectangle du debut du dessin
-		}
-		if (last_time) {
-			brushMap.put(r, rectDebut); //ajouter le dernier rectangle du dessin comme cl� et celui du debut comme valeur
-		}*/
 	}
 	
 	public void tracer_ligne() {
@@ -913,7 +875,6 @@ public class Controleur {
 	//Fonction appelee lorsqu'on appuie sur le bouton pinceau
 	public void set_pinceau() {
 		this.last_button = Pinceau_Button;
-		countPinceauRect = 0;
 	}
 	
 	//Fonction appelee lorsqu'on appuie sur le bouton eraser
@@ -1051,58 +1012,53 @@ public class Controleur {
 	
 	protected void undoShape(Shape removedShape) {
 		if(removedShape.getClass() == Line.class) {
+			boolean pinceau = false;
             Line tempLine = (Line) removedShape;
             //mise a jour du stroke (trait de dessin)
             tempLine.setStroke(gc.getStroke());
             tempLine.setStrokeWidth(gc.getLineWidth());
-            //ajout dans la liste des suivants
-            redoHistory.push(tempLine);
-           
-        }
-        else if(removedShape.getClass() == Rectangle.class) {
-        	//System.out.println("undo rectangle"+brushMap.containsKey(listShapes.size()-1));
-        	if(brushMap.containsKey(removedShape)){
-        		Rectangle tempRect = (Rectangle) removedShape;
-        		tempRect.setStroke(gc.getStroke());
-                tempRect.setStrokeWidth(gc.getLineWidth());
-                
-                Rectangle Rfin = tempRect;
-        		Rectangle Rdebut = brushMap.get(Rfin);
-        		//System.out.println("rdebut dans map"+Rdebut+", sa cle"+removedShape);
-        		//undo (annuler) tout les rectangles qui ont servi au dessin avec pinceau 
-        		//int count = brushMap.get(listShapes.size()-1);
-        		while( Rfin != Rdebut ) {
+            //si la forme d'avant est une ligne aussi, on verifie si sa fin est 
+            //le debut de la ligne actuelle, alors on est dans le cas d'un dessin 
+            //avec pinceau
+            int temptaille =  undoHistory.size()-2;
+            //System.out.println("taille"+undoHistory.size()+", temptaille "+temptaille);
+            while( (temptaille != 0) && (undoHistory.get(temptaille).getClass() == Line.class)) {
+            	pinceau = true;
+            	Line actual = (Line) undoHistory.lastElement();  
+                Line precedant = (Line) undoHistory.get(temptaille);
+            	if(precedant.getEndX() == actual.getStartX() &&  precedant.getEndY() == actual.getStartY()) {
+            		//System.out.println("precedant.fin = "+precedant.getEndX()+","+precedant.getEndY()+" actual.debut "+actual.getStartX()+", "+actual.getStartY());
         			//ajout dans la liste des suivants
-                    redoHistory.push(Rfin);
-                    redoPinceauRect.add(Rfin);
+                    redoHistory.push(actual);
                     //supprimer de la listes des dessins
                     if(!listShapes.isEmpty())
                     	listShapes.remove(listShapes.size()-1);
                     //suprimer de l'historique des annulations                       
                     undoHistory.pop();
                     //System.out.println(undoHistory.toString());
-                    Rfin = (Rectangle) undoHistory.lastElement();        
-        		}
-        			
-        		//ajout dans la liste des suivants
-                redoHistory.push(Rfin);
-                redoPinceauRect.add(Rfin);
-                   
-        	}
-        	else {
-        		Rectangle tempRect = (Rectangle) removedShape;
-                tempRect.setStroke(gc.getStroke());
-                tempRect.setStrokeWidth(gc.getLineWidth());
-                //ajout dans la liste des suivants
-                redoHistory.push(tempRect);
-                
-         	
-        	}   
+                    temptaille = undoHistory.size()-2;	
+        		}  
+            	else {
+            		break;
+            	}
+            }
+            if(!pinceau) {
+            	//ajout dans la liste des suivants
+                redoHistory.push(tempLine);
+            }
+        }
+        else if(removedShape.getClass() == Rectangle.class) {
+        	Rectangle tempRect = (Rectangle) removedShape;
+            tempRect.setStroke(gc.getStroke());
+            tempRect.setStrokeWidth(gc.getLineWidth());
+            //ajout dans la liste des suivants
+            redoHistory.push(tempRect);    		
+        	   
         }
         else if(removedShape.getClass() == Circle.class) {
             Circle tempCirc = (Circle) removedShape;
-            tempCirc.setFill(gc.getFill());
             tempCirc.setStroke(gc.getStroke());
+            tempCirc.setStrokeWidth(gc.getLineWidth());
             redoHistory.push(tempCirc);
             
             //redoHistory.push(new Circle(tempCirc.getCenterX(), tempCirc.getCenterY(), tempCirc.getRadius()));
@@ -1116,25 +1072,13 @@ public class Controleur {
 			redoHistory.push(tempPolygon);
 			
         }
-        /*else if(removedShape.getClass() == Ellipse.class) {
-            Ellipse tempElps = (Ellipse) removedShape;
-            //tempElps.setFill(gc.getFill());
-            tempElps.setStroke(gc.getStroke());
-            tempElps.setStrokeWidth(gc.getLineWidth());
-            
-            //supprimer de la listes des dessins
-            if(!listShapes.isEmpty())
-            	listShapes.remove(listShapes.size()-1);
-            //suprimer de l'historique des annulations
-            undoHistory.pop();
-            redoHistory.push(new Ellipse(tempElps.getCenterX(), tempElps.getCenterY(), tempElps.getRadiusX(), tempElps.getRadiusY()));
-        }*/
-		
-		//recuperer le dernier element de la liste des suivants
-        Shape lastRedo = redoHistory.lastElement();
-        //mettre a jour le stroke
-        lastRedo.setStroke(removedShape.getStroke());
-        lastRedo.setStrokeWidth(removedShape.getStrokeWidth());
+		if(!redoHistory.isEmpty()) {
+			//recuperer le dernier element de la liste des suivants
+	        Shape lastRedo = redoHistory.lastElement();
+	        //mettre a jour le stroke
+	        lastRedo.setStroke(removedShape.getStroke());
+	        lastRedo.setStrokeWidth(removedShape.getStrokeWidth());
+		}
           
     }
 	
@@ -1159,45 +1103,44 @@ public class Controleur {
 	
 	protected void redoShape(Shape shape) {
 		if(shape.getClass() == Line.class) {
+			boolean pinceau = false;
             Line tempLine = (Line) shape;
-            gc.strokeLine(tempLine.getStartX(), tempLine.getStartY(), tempLine.getEndX(), tempLine.getEndY());
-            //ajout a la l'historique des annulations
-            undoHistory.push(tempLine);
+            int temptaille =  redoHistory.size()-2;
+            System.out.println("taille"+redoHistory.size()+", temptaille "+temptaille);
+            while( (temptaille > 0) && (redoHistory.get(temptaille).getClass() == Line.class)) {
+            	System.out.println("while");
+            	pinceau = true;
+            	Line actual = (Line) redoHistory.lastElement();  
+                Line precedant = (Line) redoHistory.get(temptaille);
+            	if(actual.getEndX() == precedant.getStartX() &&  actual.getEndY() == precedant.getStartY()) {
+            		System.out.println("precedant.fin = "+actual.getEndX()+","+actual.getEndY()+" actual.debut "+precedant.getStartX()+", "+precedant.getStartY());
+        			//dessin
+            		gc.strokeLine(actual.getStartX(), actual.getStartY(), actual.getEndX(), actual.getEndY());
+            		//ajout dans la liste des suivants
+                    undoHistory.push(actual);
+                    //ajouter a la liste des dessins
+                    listShapes.add(actual);
+                    //suprimer de l'historique des annulations                       
+                    redoHistory.pop();
+                    //System.out.println(undoHistory.toString());
+                    temptaille = redoHistory.size()-2;	
+        		}  
+            	else {
+            		break;
+            	}
+            }
+            if(!pinceau) {
+            	gc.strokeLine(tempLine.getStartX(), tempLine.getStartY(), tempLine.getEndX(), tempLine.getEndY());
+            	//ajout a la l'historique des annulations
+            	undoHistory.push(tempLine);
+            }
         }
         else if(shape.getClass() == Rectangle.class) {
             Rectangle tempRect = (Rectangle) shape;
-            if(redoPinceauRect.peek() == tempRect ) {
-            	Rectangle Rfin = tempRect;
-            	System.out.println("rectDeb"+Rfin+"\n\n"+brushMap.containsKey(Rfin));
-            	
-            	Rectangle Rdebut = brushMap.get(Rfin);
-            	gc.strokeRect(Rfin.getX(), Rfin.getY(), Rfin.getWidth(), Rfin.getHeight());
-        		//ajout a la l'historique des annulations
-                undoHistory.push(Rfin);
-                undoPinceauRect.push(Rfin);
-                listShapes.add(Rfin);
-                redoPinceauRect.pop();
-                redoHistory.pop();
-                Rfin = redoPinceauRect.peek();
-            	while( brushMap.get(Rfin) != Rdebut) {
-                	System.out.println("rectFin"+Rfin+"la valeur de ce Rfin"+brushMap.get(Rfin));
-            		//dessiner
-            		gc.strokeRect(Rfin.getX(), Rfin.getY(), Rfin.getWidth(), Rfin.getHeight());
-            		//ajout a la l'historique des annulations
-                    undoHistory.push(Rfin);
-                    undoPinceauRect.push(Rfin);
-                    listShapes.add(Rfin);
-                    redoPinceauRect.pop();
-                    redoHistory.pop();
-                    Rfin = redoPinceauRect.peek();
-            	}
-            	
-            }else {
-            	//dessiner
-            	gc.strokeRect(tempRect.getX(), tempRect.getY(), tempRect.getWidth(), tempRect.getHeight());
-                //ajout a la l'historique des annulations
-                undoHistory.push(tempRect);
-            }
+            //dessiner
+        	gc.strokeRect(tempRect.getX(), tempRect.getY(), tempRect.getWidth(), tempRect.getHeight());
+            //ajout a la l'historique des annulations
+            undoHistory.push(tempRect);	
         }
                
         else if(shape.getClass() == Circle.class) {
