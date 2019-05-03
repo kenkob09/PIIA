@@ -282,7 +282,7 @@ public class Controleur {
 	
 	//Fonction appelee lorsqu'on relache la souris sur le canvas
 	public void end_trace(MouseEvent e, GraphicsContext gc){
-		double lastStrokeWidth = 1;
+		//double lastStrokeWidth = 1;
 		xEnd = e.getX();
 		yEnd = e.getY();
         
@@ -318,7 +318,7 @@ public class Controleur {
 		
 		//Si on veut tracer un polygone
 		else if (this.last_button == Polygone_Button) {
-			lastStrokeWidth = gc.getLineWidth();
+			//lastStrokeWidth = gc.getLineWidth();
 			tracer_polygone();
 		}
 		
@@ -348,7 +348,7 @@ public class Controleur {
 			}else {
 				//lastUndo.setFill(gc.getFill());
 				lastUndo.setStroke(gc.getStroke());
-				lastUndo.setStrokeWidth(lastStrokeWidth);	
+				//lastUndo.setStrokeWidth(lastStrokeWidth);	
 			}
 			//System.out.println("size"+undoHistory.lastElement().getStrokeWidth());
 		}	
@@ -432,7 +432,7 @@ public class Controleur {
 	
 	public void tracer_polygone() {		
 		//Si on a finit de tracer le polygone (on est quasiment revenu sur le point de depart)
-		if ((this.xPoints.size()>1)&&(this.yPoints.size()>1)&&(Math.abs(xStart-this.xPoints.get(0))<4)&&(Math.abs(yStart-this.yPoints.get(0))<4)) {
+		if ((this.xPoints.size()>1)&&(this.yPoints.size()>1)&&(Math.abs(xStart-this.xPoints.get(0))<6)&&(Math.abs(yStart-this.yPoints.get(0))<6)) {
 			gc.strokePolygon(double_array_to_list(xPoints), double_array_to_list(yPoints), xPoints.size());
 			
             //ajout dans le undoHistory
@@ -456,7 +456,6 @@ public class Controleur {
 			//On ajoute les coordonnees du nouveau point dans le tableau
 			gc.setLineWidth(3);
 			gc.strokeOval(xStart, yStart, 5, 5);
-			/////////////////////Enelever les oval une fois le polygone trace
 			this.xPoints.add(xStart);
 			this.yPoints.add(yStart);
 		}
