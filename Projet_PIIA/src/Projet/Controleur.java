@@ -387,7 +387,6 @@ public class Controleur {
 		countPinceauRect++;
 		
 		
-		
 		/*
     	rect.setWidth(size/2); //largeur du carre
         rect.setHeight(size/2);//hauteur
@@ -462,8 +461,8 @@ public class Controleur {
 	
 	public void tracer_polygone() {		
 		//Si on a finit de tracer le polygone (on est quasiment revenu sur le point de depart)
-		if ((this.xPoints.size()>1)&&(this.yPoints.size()>1)&&(Math.abs(xStart-this.xPoints.get(0))<6)&&(Math.abs(yStart-this.yPoints.get(0))<6)) {
-			gc.setLineWidth(Double.parseDouble(Pinceau_Size_Champs.getText()));
+		if ((this.xPoints.size()>1)&&(this.yPoints.size()>1)&&(Math.abs(xStart-this.xPoints.get(0))<5)&&(Math.abs(yStart-this.yPoints.get(0))<5)) {
+			//On trace le polygone
 			gc.strokePolygon(double_array_to_list(xPoints), double_array_to_list(yPoints), xPoints.size());
             //ajout dans le undoHistory
             Polygon poly = new Polygon();
@@ -476,7 +475,6 @@ public class Controleur {
             poly.setStrokeWidth(gc.getLineWidth());
             listShapes.add(poly);
             undoHistory.push(poly);
-			
 			//On vide les deux lists une fois qu'on a trace le polygone
 			xPoints.clear();
 			yPoints.clear();
@@ -484,9 +482,10 @@ public class Controleur {
 		else {
 			//On ajoute les coordonnees du nouveau point dans le tableau
 			gc.setLineWidth(3);
-			gc.strokeOval(xStart, yStart, 5, 5);
+			gc.strokeOval(xStart, yStart, 3, 3);
 			this.xPoints.add(xStart);
 			this.yPoints.add(yStart);
+			gc.setLineWidth(Double.parseDouble(Pinceau_Size_Champs.getText()));
 		}
 	}
 	
