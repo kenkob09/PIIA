@@ -528,7 +528,7 @@ public class Controleur {
         temp.setStrokeWidth(l.getStrokeWidth());
     	listShapes.set(index,temp);
     	if (first_time) {
-        	undoHistory.push(temp);
+        	//undoHistory.push(temp);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -553,7 +553,7 @@ public class Controleur {
     	rect.setStrokeWidth(r.getStrokeWidth());
     	listShapes.set(index,rect);
     	if (first_time) {
-        	undoHistory.push(rect);
+        	//undoHistory.push(rect);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -576,7 +576,7 @@ public class Controleur {
     	cerc.setStrokeWidth(c.getStrokeWidth());
         listShapes.set(index,cerc);
     	if (first_time) {
-        	undoHistory.push(cerc);
+        	//undoHistory.push(cerc);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -613,7 +613,7 @@ public class Controleur {
     	poly.setStrokeWidth(p.getStrokeWidth());
         listShapes.set(index,poly);
     	if (first_time) {
-        	undoHistory.push(poly);
+        	//undoHistory.push(poly);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -673,7 +673,7 @@ public class Controleur {
         temp.setStrokeWidth(l.getStrokeWidth());
     	listShapes.set(index,temp);
     	if (first_time) {
-        	undoHistory.push(temp);
+        	//undoHistory.push(temp);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -718,7 +718,7 @@ public class Controleur {
         temp.setStrokeWidth(r.getStrokeWidth());
     	listShapes.set(index,temp);
     	if (first_time) {
-        	undoHistory.push(temp);
+        	//undoHistory.push(temp);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -765,11 +765,11 @@ public class Controleur {
         temp.setStrokeWidth(c.getStrokeWidth());
     	listShapes.set(index,temp);
     	if (first_time) {
-        	undoHistory.push(temp);
+        	//undoHistory.push(temp);
         	first_time = false;
     	}        	
     	if (last_time) {
-        	//undoHistory.push(temp);
+        	undoHistory.push(temp);
         	last_time = false;
     	}	}
 	
@@ -812,7 +812,7 @@ public class Controleur {
     	poly.setStrokeWidth(p.getStrokeWidth());
         listShapes.set(index,poly);
     	if (first_time) {
-        	undoHistory.push(poly);
+        	//undoHistory.push(poly);
         	first_time = false;
     	}        	
     	if (last_time) {
@@ -1003,14 +1003,9 @@ public class Controleur {
             }
         }		
 	}
-	
-	
-	@FXML
-	protected void onSave(ActionEvent event) {
 
-	}
 	
-	/*
+	
 	@FXML
 	protected void onSave(ActionEvent event) {
 		FileChooser fileChooser = new FileChooser();
@@ -1018,6 +1013,8 @@ public class Controleur {
 	    fileChooser.setInitialFileName(".");
 	    fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(
 	               "Scalable Vector Graphics (*.svg)", "*.svg"));
+	    
+	    
 	    File file = fileChooser.showSaveDialog(Canvas.getScene().getWindow());
 
 	    if (file != null) {
@@ -1031,7 +1028,7 @@ public class Controleur {
 	        	e.printStackTrace();
 	        }
 	    }
-	}*/
+	}
 	
 	@FXML
 	protected void onExit() {

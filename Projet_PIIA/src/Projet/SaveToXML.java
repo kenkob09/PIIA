@@ -37,7 +37,7 @@ public class SaveToXML {
         
         for(int i=0;i<l.size();i++){
             /////////////////////m = l.get(i).getProperties();
-        	m.
+        	
             Element sh = dom.createElement(l.get(i).getClass().getSimpleName());
             for (Map.Entry<String, Double> entry : m.entrySet()) {
                 String key = entry.getKey();

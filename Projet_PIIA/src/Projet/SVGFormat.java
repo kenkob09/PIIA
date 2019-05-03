@@ -23,7 +23,7 @@ public class SVGFormat {
     /**
      * @param canvas Le canvas.
      * @param file Le fichier.
-     * @throws IOException si l'ecriture a echoué.
+     * @throws IOException si l'ecriture a echouï¿½.
      */
     
     public static void write(Region canvas, File file) throws IOException {
@@ -37,7 +37,7 @@ public class SVGFormat {
 				+ "    xmlns:svg=\"http://www.w3.org/2000/svg\"\n" + "    xmlns=\"http://www.w3.org/2000/svg\"\n"
 + ">\n";
 	   writer.write(svgHeader);
-	   /*Region viewport = (Region) canvas.getParent();
+	   Region viewport = (Region) canvas.getParent();
        writer.write(String.format("<svg xmlns=\"http://www.w3.org/2000/svg\"" +
                 " xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"%f\"" +
                 " height=\"%f\">\n", viewport.getWidth(), viewport.getHeight()));
@@ -53,7 +53,6 @@ public class SVGFormat {
                 write((Text) node, writer);
             }
        }
-*/
        writer.write("</svg>\n");
 
        writer.flush();
