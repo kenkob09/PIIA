@@ -9,6 +9,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Control;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -21,6 +23,8 @@ public class Vue extends Application {
 		primaryStage.setTitle("EASY PAINT");
 		AnchorPane myPane = (AnchorPane)FXMLLoader.load(getClass().getResource("pro.fxml"));
 		Scene scene = new Scene(myPane, 700, 500);
+		Image i = new Image(getClass().getResource("icone.png").toExternalForm());
+		primaryStage.getIcons().add(i); 
 		//Affichage
 		primaryStage.setScene(scene);
 		primaryStage.show();

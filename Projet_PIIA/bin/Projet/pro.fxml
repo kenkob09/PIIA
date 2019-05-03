@@ -122,6 +122,7 @@
                                     </ImageView>
                                  </graphic>
                               </Button>
+                              <ColorPicker fx:id="Color_Picker" />
                            </items>
                         </ToolBar>
                   </content>
@@ -134,7 +135,7 @@
                               <Button fx:id="Copier_Button" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
                               <Button fx:id="Coller_Button" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
                               <Button fx:id="Deplacer_Button" mnemonicParsing="false" onAction="#on_Move" prefHeight="30.0" prefWidth="30.0" text="D" />
-                              <Button fx:id="Redim_Button" mnemonicParsing="false" onAction="#set_redim" prefHeight="30.0" prefWidth="30.0" text="RD" />
+                              <Button fx:id="Redim_Button" mnemonicParsing="false" onAction="#set_redim" prefHeight="30.0" prefWidth="30.0" text="R" />
                               <Separator fx:id="Separator1" orientation="VERTICAL" prefHeight="0.0" prefWidth="4.0" />
                               <Button fx:id="Ligne_Button" mnemonicParsing="false" onAction="#set_line" prefHeight="30.0" prefWidth="30.0">
                                  <graphic>
@@ -170,36 +171,12 @@
                         </ToolBar>
                   </content>
                 </Tab>
-                  <Tab fx:id="Tab_Couleurs" style="-fx-background-color: #a6e7ec;" text="Couleurs">
-                     <content>
-                        <ToolBar fx:id="ToolBar_Couleurs" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="700.0">
-                           <items>
-                              <Button fx:id="Couleur_Button" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button1" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button2" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button3" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button4" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button5" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button6" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button7" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button8" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button9" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button10" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button11" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button12" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button13" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <Button fx:id="Couleur_Button14" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" />
-                              <ColorPicker fx:id="Color_Picker" />
-                           </items>
-                        </ToolBar>
-                     </content>
-                  </Tab>
               </tabs>
             </TabPane>
             <Canvas fx:id="Canvas" height="335.0" width="700.0" GridPane.rowIndex="2" />
          </children>
       </GridPane>
-      <Pane fx:id="Start_Pane" maxHeight="500.0" maxWidth="700.0" minHeight="456.0" minWidth="700.0" prefHeight="456.0" prefWidth="700.0" style="-fx-background-color: #f4f4f4;">
+      <Pane fx:id="Start_Pane" maxHeight="500.0" maxWidth="700.0" minHeight="456.0" minWidth="700.0" prefHeight="456.0" prefWidth="700.0" style="-fx-background-color: #f4f4f4;" visible="false">
          <children>
             <ImageView fx:id="Start_Background" fitHeight="439.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true">
                <image>
