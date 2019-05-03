@@ -104,6 +104,9 @@ public class Controleur {
 	private boolean first_time;
 	private boolean last_time;
 	
+	//forme a stocker pour couper/coller
+	private Shape stocked_shape;
+	
 	//liste de toutes les formes dessinees
 	//necessaires pour faire le redimensionnement et le deplacement
 	private ObservableList<Shape> listShapes = FXCollections.observableArrayList();;
@@ -217,11 +220,11 @@ public class Controleur {
     		}
     		else if(this.last_button == Copier_Button) {
     			forme_visee();
+    			stocked_shape = listShapes.get(indexShape);
     		}
-    		/*else if(this.last_button == Couper_Button) {
-    			forme_visee();
+    		else if(this.last_button == Couper_Button) {
     			couper();
-    		}*/
+    		}
     		else if(this.last_button == Coller_Button) {
     			coller();
     		}
@@ -826,6 +829,97 @@ public class Controleur {
     	}	
 	}
 	
+    
+	/***************************************************************** Fonctions Copier/Coller/Coupe *****************************************************************/
+	
+	//Fonction pour coller
+	public void coller() {
+		if(stocked_shape!=null) {
+	        if(stocked_shape.getClass() == Line.class) {
+	        	Line tempLine = (Line) stocked_shape;
+	        	//listShapes.add(new Line(tempLine.getStartX(), tempLine.getStartY(), tempLine.getEndX(), tempLine.getEndY()) );
+	        	double delta_x = tempLine.getEndX() - tempLine.getStartX();
+	        	double delta_y = tempLine.getEndY() - tempLine.getStartY();      
+	        	Line l = new Line(xStart, yStart, xStart+delta_x, yStart+delta_y);
+	        	l.setStroke(tempLine.getStroke());
+	        	l.setStrokeWidth(tempLine.getStrokeWidth());
+	        	undoHistory.push(l);
+	        	listShapes.add(l);
+	        }
+	        else if(stocked_shape.getClass() == Rectangle.class) {
+	        	Rectangle rect = (Rectangle) stocked_shape;
+	        	Rectangle r = new Rectangle(xStart, yStart, rect.getWidth(), rect.getHeight());
+	        	r.setStroke(rect.getStroke());
+	        	r.setStrokeWidth(rect.getStrokeWidth());
+	        	undoHistory.push(r);
+	        	listShapes.add(r);        
+	        }
+	        else if(stocked_shape.getClass() == Circle.class) {
+	        	Circle cerc = (Circle) stocked_shape;
+	        	Circle c = new Circle(xStart, yStart, cerc.getRadius());
+	        	c.setStroke(cerc.getStroke());
+	        	c.setStrokeWidth(cerc.getStrokeWidth());
+	        	undoHistory.push(c);
+	        	listShapes.add(c);        
+	        }
+	        else if(stocked_shape.getClass() == Polygon.class){
+	    		Polygon poly= (Polygon) stocked_shape;
+	    		//recuperation des point
+	    		List<Double> points = poly.getPoints();
+	    		int          taille = poly.getPoints().size() / 2;
+	    	    double[]     pointsX = new double[taille];
+	    	    double[]     pointsY = new double[taille];
+	    	    int          count = 0;
+	    	    for (int j = 0 ; j < points.size() ; j++) {
+	    	        if (j % 2 == 0) {
+	    	            pointsX[count] = points.get(j);
+	    	        } else {
+	    	            pointsY[count] = points.get(j);
+	    	            count++;
+	    	        }
+	    	    }
+	    	    //Recherche du point le plus haut a gauche
+	    	    int indice = 0;
+	    	    double min = pointsX[0]+pointsY[0];
+	    	    for (int i=0; i<pointsX.length; i++) {
+	    	    	if (pointsX[i]+pointsY[i]<min) {
+	    	    		indice=i;
+	    	    		min = pointsX[i]+pointsY[i];
+	    	    	}
+	    	    }
+	    	    //On decale le tout par rapport a ce point
+	    	    double distX = xStart - pointsX[indice];
+	    	    double distY = yStart - pointsY[indice];
+	    	    for (int i=0; i<pointsX.length; i++) {
+		    	    pointsX[i]=pointsX[i]+distX;
+		    	    pointsY[i]=pointsY[i]+distY;
+	    	    }
+	    	    //ajout dans la liste
+	            Polygon p = new Polygon();
+	            int iter = 0;
+	            while (iter < taille){
+	                p.getPoints().add(pointsX[iter]);
+	                p.getPoints().add(pointsY[iter]);
+	                iter++;
+	            }		
+	            p.setStroke(poly.getStroke());
+	        	p.setStrokeWidth(poly.getStrokeWidth());
+	        	undoHistory.push(p);
+	        	listShapes.add(p);   
+	        }
+	        refresh();
+		}
+	}
+	
+	//Fonction pour couper
+	public void couper() {
+		forme_visee();
+		stocked_shape = listShapes.get(indexShape);
+		undoHistory.remove(stocked_shape);
+		listShapes.remove(indexShape);
+		refresh();
+	}
+	
 	/***************************************************************** Fonctions de remplissage *****************************************************************/
 	
 	public void remplissage() {
@@ -846,9 +940,6 @@ public class Controleur {
 			}
 			public void set_x(int x2) {
 				this.x=x2;
-			}
-			public void set_y(int y2) {
-				this.y=y2;
 			}
 			public Pixel copy(){
 				return new Pixel(this.x,this.y);
@@ -912,45 +1003,7 @@ public class Controleur {
 		}
 		return res;
 	}
-    
-	/***************************************************************** Fonctions Copier/Coller/Coupe *****************************************************************/
-	
-	//Fonction pour coller
-	public void coller() {
-		Shape s = listShapes.get(indexShape);
-        if(s.getClass() == Line.class) {
-        	Line tempLine = (Line) s;
-        	//listShapes.add(new Line(tempLine.getStartX(), tempLine.getStartY(), tempLine.getEndX(), tempLine.getEndY()) );
-        	double delta_x = tempLine.getEndX() - tempLine.getStartX();
-        	double delta_y = tempLine.getEndY() - tempLine.getStartY();      
-        	Line l = new Line(xStart, yStart, xStart+delta_x, yStart+delta_y);
-        	l.setStroke(tempLine.getStroke());
-        	l.setStrokeWidth(tempLine.getStrokeWidth());
-        	undoHistory.push(l);
-        	listShapes.add(l);
-        }
-        else if(s.getClass() == Rectangle.class) {
-        	Rectangle rect = (Rectangle) s;
-        	Rectangle r = new Rectangle(xStart, yStart, rect.getWidth(), rect.getHeight());
-        	r.setStroke(rect.getStroke());
-        	r.setStrokeWidth(rect.getStrokeWidth());
-        	undoHistory.push(r);
-        	listShapes.add(r);        
-        }
-        else if(s.getClass() == Circle.class) {
-        	Circle cerc = (Circle) s;
-        	Circle c = new Circle(xStart, yStart, cerc.getRadius());
-        	c.setStroke(cerc.getStroke());
-        	c.setStrokeWidth(cerc.getStrokeWidth());
-        	undoHistory.push(c);
-        	listShapes.add(c);        
-        }
-        /*
-        else if(s.getClass() == Polygon.class){
-    		Polygon poly= (Polygon) s;
-        }*/
-        refresh();
-	}
+
 	
 	/***************************************************************** Fonctions pour les boutons *****************************************************************/
 	
