@@ -1173,21 +1173,22 @@ public class Controleur {
 			try {
 				FileOutputStream fos = new FileOutputStream(new File(chooser.getSelectedFile()+".xml"));
 				XMLEncoder encoder = new XMLEncoder(fos);
+				ArrayList<Forme> liste = new ArrayList<>();
 				for (Shape s : listShapes) {
 					if (s.getClass()==Line.class) {
 						Line temp = (Line)s;
 						Ligne l = new Ligne(temp.getStartX(),temp.getStartY(),temp.getEndX(),temp.getEndY(),temp.getStrokeWidth(),temp.getStroke().toString());
-						encoder.writeObject(l);
+						liste.add(l);
 					}
 					if (s.getClass()==Rectangle.class) {
 						Rectangle temp = (Rectangle)s;
 						Rectangle_ r = new Rectangle_(temp.getX(),temp.getY(),temp.getWidth(),temp.getHeight(),temp.getStrokeWidth(),temp.getStroke().toString());
-						encoder.writeObject(r);
+						liste.add(r);
 					}
 					if (s.getClass()==Circle.class) {
 						Circle temp = (Circle)s;
 						Cercle c = new Cercle(temp.getCenterX(),temp.getCenterY(),temp.getRadius(),temp.getStrokeWidth(),temp.getStroke().toString());
-						encoder.writeObject(c);
+						liste.add(c);
 					}
 					if (s.getClass()==Polygon.class) {
 						Polygon temp = (Polygon)s;
@@ -1196,9 +1197,11 @@ public class Controleur {
 					    double[]     pointsY = new double[taille];
 						get_points_from_polygone(pointsX,pointsY,temp);					
 						Polygone p = new Polygone(pointsX,pointsY,temp.getStrokeWidth(),temp.getStroke().toString());
-						encoder.writeObject(p);
+						liste.add(p);
 					}
 				}
+				Liste_Forme save_list = new Liste_Forme(liste);
+				encoder.writeObject(save_list);
 				encoder.close();
 				fos.close();
 			}
@@ -1224,16 +1227,46 @@ public class Controleur {
 			try {
 				FileInputStream fis = new FileInputStream(f);
 				XMLDecoder decoder = new XMLDecoder(fis);
+				ArrayList<Shape> saved_shapes = new ArrayList<>();
 				//Recuperer les formes du fichier XML
-				Forme forme = (Forme)decoder.readObject();
-				Line l = null;
-				if (forme.getClass()==Ligne.class) {
-					Ligne ligne = (Ligne) forme;
-					l = new Line(ligne.getXStart(),ligne.getYStart(),ligne.getXEnd(),ligne.getYEnd());
-					l.setStroke(Paint.valueOf(ligne.getPaint()));
-					l.setStrokeWidth(ligne.getStrokeWidth());
+				//Forme forme = (Forme)decoder.readObject();
+				Liste_Forme save_list = (Liste_Forme)decoder.readObject();
+				for(Forme forme : save_list.getListe()) {
+					if (forme.getClass()==Ligne.class) {
+						Ligne ligne = (Ligne) forme;
+						Line l = new Line(ligne.getXStart(),ligne.getYStart(),ligne.getXEnd(),ligne.getYEnd());
+						l.setStroke(Paint.valueOf(ligne.getPaint()));
+						l.setStrokeWidth(ligne.getStrokeWidth());
+						saved_shapes.add(l);
+					}
+					if (forme.getClass()==Rectangle_.class) {
+						Rectangle_ rect = (Rectangle_) forme;
+						Rectangle  r = new Rectangle(rect.getX(),rect.getY(),rect.getWidth(),rect.getHeight());
+						r.setStroke(Paint.valueOf(rect.getPaint()));
+						r.setStrokeWidth(rect.getStrokeWidth());
+						saved_shapes.add(r);
+					}
+					if (forme.getClass()==Cercle.class) {
+						Cercle cerc = (Cercle) forme;
+						Circle c = new Circle(cerc.getCenterX(),cerc.getCenterY(),cerc.getRadius());
+						c.setStroke(Paint.valueOf(cerc.getPaint()));
+						c.setStrokeWidth(cerc.getStrokeWidth());
+						saved_shapes.add(c);
+					}
+					if (forme.getClass()==Polygone.class) {
+						Polygone poly = (Polygone) forme;
+						Polygon p = new Polygon();
+				        int iter = 0;
+				        while (iter < poly.getXPoints().length){
+				            p.getPoints().add(poly.getXPoints()[iter]);
+				            p.getPoints().add(poly.getYPoints()[iter]);
+				            iter++;
+				        }	
+						p.setStroke(Paint.valueOf(poly.getPaint()));
+						p.setStrokeWidth(poly.getStrokeWidth());
+						saved_shapes.add(p);
+					}
 				}
-				//Ligne ligne = (Ligne)decoder.readObject();
 				decoder.close();
 				try {
 					fis.close();
@@ -1245,7 +1278,10 @@ public class Controleur {
 				undoHistory.removeAllElements();
 				redoHistory.removeAllElements();
 				listShapes.clear();
-				listShapes.add(l);
+				for(Shape shape : saved_shapes) {
+					listShapes.add(shape);
+				}
+				//listShapes.add(l);
 				refresh();
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -3,8 +3,6 @@ package Projet;
 public class Polygone extends Forme implements java.io.Serializable{
 	private double[] xPoints;
 	private double[] yPoints;
-	private double strokeWidth;
-	private String paint;
 	
 	public Polygone() {
 		
