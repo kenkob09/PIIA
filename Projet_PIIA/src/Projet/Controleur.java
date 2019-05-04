@@ -16,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
@@ -1174,10 +1175,30 @@ public class Controleur {
 				XMLEncoder encoder = new XMLEncoder(fos);
 				for (Shape s : listShapes) {
 					if (s.getClass()==Line.class) {
-						//Line l = new Line(2,3,4,5,10,Color.BLUE);
+						Line temp = (Line)s;
+						Ligne l = new Ligne(temp.getStartX(),temp.getStartY(),temp.getEndX(),temp.getEndY(),temp.getStrokeWidth(),temp.getStroke().toString());
+						encoder.writeObject(l);
+					}
+					if (s.getClass()==Rectangle.class) {
+						Rectangle temp = (Rectangle)s;
+						Rectangle_ r = new Rectangle_(temp.getX(),temp.getY(),temp.getWidth(),temp.getHeight(),temp.getStrokeWidth(),temp.getStroke().toString());
+						encoder.writeObject(r);
+					}
+					if (s.getClass()==Circle.class) {
+						Circle temp = (Circle)s;
+						Cercle c = new Cercle(temp.getCenterX(),temp.getCenterY(),temp.getRadius(),temp.getStrokeWidth(),temp.getStroke().toString());
+						encoder.writeObject(c);
+					}
+					if (s.getClass()==Polygon.class) {
+						Polygon temp = (Polygon)s;
+					    int          taille = temp.getPoints().size() / 2;
+					    double[]     pointsX = new double[taille];
+					    double[]     pointsY = new double[taille];
+						get_points_from_polygone(pointsX,pointsY,temp);					
+						Polygone p = new Polygone(pointsX,pointsY,temp.getStrokeWidth(),temp.getStroke().toString());
+						encoder.writeObject(p);
 					}
 				}
-				encoder.writeObject(new Line(10,10,20,20));
 				encoder.close();
 				fos.close();
 			}
@@ -1204,7 +1225,15 @@ public class Controleur {
 				FileInputStream fis = new FileInputStream(f);
 				XMLDecoder decoder = new XMLDecoder(fis);
 				//Recuperer les formes du fichier XML
-				Line l = (Line)decoder.readObject();
+				Forme forme = (Forme)decoder.readObject();
+				Line l = null;
+				if (forme.getClass()==Ligne.class) {
+					Ligne ligne = (Ligne) forme;
+					l = new Line(ligne.getXStart(),ligne.getYStart(),ligne.getXEnd(),ligne.getYEnd());
+					l.setStroke(Paint.valueOf(ligne.getPaint()));
+					l.setStrokeWidth(ligne.getStrokeWidth());
+				}
+				//Ligne ligne = (Ligne)decoder.readObject();
 				decoder.close();
 				try {
 					fis.close();
