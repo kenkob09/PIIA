@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -39,10 +40,20 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.MenuItem;
 
 import java.awt.Point;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +61,8 @@ import java.util.Map;
 import java.util.Stack;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class Controleur {
@@ -76,10 +89,12 @@ public class Controleur {
 	@FXML private GridPane Whole_Grid_Pane;
 	@FXML private Button Deplacer_Button;
 	@FXML private Button Redim_Button;
-	@FXML private MenuItem MenuItem_Sauver;
+    @FXML private MenuItem MenuItem_Sauver_PNG;
+    @FXML private MenuItem MenuItem_Sauver_SVG;
 	@FXML private MenuItem MenuItem_Ouvrir;
 	@FXML private MenuItem MenuItem_Nouv;
 	@FXML private MenuItem MenuItem_Quitter;
+	@FXML private Label Message;
 	
 	/***************************************************************** Attributs de classe ******************************************************************/
 	
@@ -147,7 +162,7 @@ public class Controleur {
         Canvas.setOnMouseReleased(e -> {end_trace(e, gc);});
         //Lorsqu'on drag sur le canvas
         Canvas.setOnMouseDragged(e -> {drag_trace(e, gc);});
-        this.MenuItem_Sauver.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
+        this.MenuItem_Sauver_SVG.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
         this.MenuItem_Ouvrir.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
         this.MenuItem_Nouv.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
         this.MenuItem_Quitter.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN, KeyCombination.SHORTCUT_DOWN));
@@ -166,7 +181,6 @@ public class Controleur {
     //DEPLACER : Animations ? 
     //REDIM : Meme pb que deplacement
     //PINCEAU : On fait la meme fonction mais avec des lignes
-    //LASTSTROKEWIDTH ?
     //BOUTONS : CHANGER APPARENCE
     //INTERFACE : PLUS DE COULEUR
     //BOUTON HELP !!
@@ -176,8 +190,8 @@ public class Controleur {
     
     //Fonction appelee lorsqu'on clique sur le canvas avec la souris
 	public void begin_trace(MouseEvent e, GraphicsContext gc){
-		System.out.println("begin_trace");
-		//On recupere de la position
+		Message.setText("Hello :) !");
+        //On recupere de la position au moment du click
 		xStart = e.getX();
 		yStart = e.getY();
 		xEnd= xStart;
@@ -219,11 +233,21 @@ public class Controleur {
     			forme_visee();
     		}
     		else if(this.last_button == Copier_Button) {
-    			forme_visee();
-    			stocked_shape = listShapes.get(indexShape);
+                if(listShapes.isEmpty()) {
+                    Message.setText("Veuiller clicker sur un point de la forme que vous souhaitez copier");
+                }
+                else {
+	    			forme_visee();
+	    			stocked_shape = listShapes.get(indexShape);
+                }
     		}
     		else if(this.last_button == Couper_Button) {
-    			couper();
+                if(listShapes.isEmpty()) {
+                    Message.setText("Veuiller clicker sur un point de la forme que vous souhaitez couper");
+                }
+                else {
+	    			couper();
+                }
     		}
     		else if(this.last_button == Coller_Button) {
     			coller();
@@ -233,6 +257,7 @@ public class Controleur {
 	
 	//Fonction appelee lorsqu'on drag la souris sur le canvas
 	public void drag_trace(MouseEvent e, GraphicsContext gc) {
+		//recuperer la position de la souris (au moment du drag)
 		xEnd = e.getX();
 		yEnd = e.getY();
 	    
@@ -286,31 +311,38 @@ public class Controleur {
 		}
 		
 		else if (this.last_button == Deplacer_Button) {
-			//On deplace
-			deplacement(xEnd,yEnd,indexShape);			
-			//On met a jour xStart et yStart
-			xStart=xEnd;
-			yStart=yEnd;
+			if(listShapes.isEmpty()) {
+                Message.setText("Il n y a aucune forme a déplacer !" );
+            }else {
+				//On deplace
+				deplacement(xEnd,yEnd,indexShape);			
+				//On met a jour xStart et yStart
+				xStart=xEnd;
+				yStart=yEnd;
+            }
 		}
 		
 		else if (this.last_button == Redim_Button) {
-			redim(xEnd,yEnd,indexShape);
-			xStart=xEnd;
-			yStart=yEnd;
+			if(listShapes.isEmpty()) {
+                Message.setText("Il n y a aucune forme a redimenssioner !" );
+            }
+			else {
+				redim(xEnd,yEnd,indexShape);
+				xStart=xEnd;
+				yStart=yEnd;
+            }
 		}
 	}		
 	
 	//Fonction appelee lorsqu'on relache la souris sur le canvas
 	public void end_trace(MouseEvent e, GraphicsContext gc){
-		//double lastStrokeWidth = 1;
+        //recuperer la position de la souris (au moment de drop)
 		xEnd = e.getX();
 		yEnd = e.getY();
         
         //Si on veut dessiner au pinceau
       	if (this.last_button == Pinceau_Button) {
       		tracer_pinceau(false,true);
-			//System.out.println("\nmap "+brushMap.toString());
-			//System.out.println("rectStart"+rectDebut+"rectFin"+r);
       	}
         //Si on veut tracer une ligne
 		if (this.last_button == Ligne_Button) {
@@ -474,9 +506,7 @@ public class Controleur {
 
 	//Fonction qui regarde la forme qui est visee par la souris
 	public void forme_visee() {
-		System.out.println("deplacement");
 		if(!listShapes.isEmpty()) {
-			System.out.println("listeShapes not empty");
 			int i =0;
 			Shape s = listShapes.get(i);
 			while(!s.contains(xStart, yStart) && i < listShapes.size()-1) {
@@ -484,7 +514,7 @@ public class Controleur {
 				s = listShapes.get(i);
 			}
 			if(i>= listShapes.size()) {
-				/************ point non reconnu, reclicker ***********/
+                Message.setText("Inconnu, veuillez recliquer sur un point appartenant à la forme que vous souhaitz deplacer !");
 			}else {
 				indexShape = i;
 			}
@@ -495,28 +525,32 @@ public class Controleur {
 	
 	//Fonction pour le deplacement de formes
 	public void deplacement(double xE, double yE, int index ){
-        Shape s = listShapes.get(index);
-       
-    	double distanceX = xE-xStart;
-    	double distanceY = yE-yStart;
-        
-        if(s.getClass() == Line.class) {
-        	Line tempLine = (Line) s;
-        	deplacer_ligne(tempLine,index,distanceX,distanceY);
+		if(listShapes.isEmpty()) {
+            Message.setText("Il n'y a aucune forme a deplacer !");
+        }else {
+	        Shape s = listShapes.get(index);
+	       
+	    	double distanceX = xE-xStart;
+	    	double distanceY = yE-yStart;
+	        
+	        if(s.getClass() == Line.class) {
+	        	Line tempLine = (Line) s;
+	        	deplacer_ligne(tempLine,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Rectangle.class) {
+	        	Rectangle rect = (Rectangle) s;
+	        	deplacer_rectangle(rect,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Circle.class) {
+	        	Circle cerc = (Circle) s;
+	        	deplacer_cercle(cerc,index,distanceX,distanceY);
+	        }
+	        else if(s.getClass() == Polygon.class){
+	    		Polygon poly= (Polygon) s;
+	    		deplacer_polygone(poly,index,distanceX,distanceY);
+	        }
+	        refresh();
         }
-        else if(s.getClass() == Rectangle.class) {
-        	Rectangle rect = (Rectangle) s;
-        	deplacer_rectangle(rect,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Circle.class) {
-        	Circle cerc = (Circle) s;
-        	deplacer_cercle(cerc,index,distanceX,distanceY);
-        }
-        else if(s.getClass() == Polygon.class){
-    		Polygon poly= (Polygon) s;
-    		deplacer_polygone(poly,index,distanceX,distanceY);
-        }
-        refresh();
 	}
 	
 	//Fonction pour deplacer une ligne
@@ -627,6 +661,7 @@ public class Controleur {
     	}
 	}
 	
+	//Recuperer les points d'un polygone
 	public void get_points_from_polygone (double[] pointsX, double[] pointsY, Polygon p) {
 		List<Double> points = p.getPoints();
 	    int          count = 0;
@@ -668,33 +703,38 @@ public class Controleur {
 	}
 	
 	public void redim_ligne(Line l, int index, double distanceX, double distanceY) {
-		double l_xMoy = (l.getStartX()+l.getEndX())/2;
-		Line temp = new Line();
-		//Si on a clique sur la premiere moitie de la ligne, alors on modifie les coordonnees du debut de ligne
-		if (xStart < l_xMoy) {
-			temp.setStartX(l.getStartX() + distanceX);
-	        temp.setStartY(l.getStartY() + distanceY);
-	        temp.setEndX(l.getEndX());
-	        temp.setEndY(l.getEndY());
-		}
-		//Si on a clique sur la deuxieme moitie de la ligne, alors on modifie les coordonnees de fin de ligne
-		else {
-			temp.setStartX(l.getStartX());
-	        temp.setStartY(l.getStartY());
-	        temp.setEndX(l.getEndX() + distanceX);
-	        temp.setEndY(l.getEndY() + distanceY);
-		}
-        temp.setStroke(l.getStroke());
-        temp.setStrokeWidth(l.getStrokeWidth());
-    	listShapes.set(index,temp);
-    	if (first_time) {
-        	//undoHistory.push(temp);
-        	first_time = false;
-    	}        	
-    	if (last_time) {
-        	undoHistory.push(temp);
-        	last_time = false;
-    	}	}
+		if(listShapes.isEmpty()) {
+            Message.setText("Il n'y a aucune forme a redimenssioner !");
+        }else {
+			double l_xMoy = (l.getStartX()+l.getEndX())/2;
+			Line temp = new Line();
+			//Si on a clique sur la premiere moitie de la ligne, alors on modifie les coordonnees du debut de ligne
+			if (xStart < l_xMoy) {
+				temp.setStartX(l.getStartX() + distanceX);
+		        temp.setStartY(l.getStartY() + distanceY);
+		        temp.setEndX(l.getEndX());
+		        temp.setEndY(l.getEndY());
+			}
+			//Si on a clique sur la deuxieme moitie de la ligne, alors on modifie les coordonnees de fin de ligne
+			else {
+				temp.setStartX(l.getStartX());
+		        temp.setStartY(l.getStartY());
+		        temp.setEndX(l.getEndX() + distanceX);
+		        temp.setEndY(l.getEndY() + distanceY);
+			}
+	        temp.setStroke(l.getStroke());
+	        temp.setStrokeWidth(l.getStrokeWidth());
+	    	listShapes.set(index,temp);
+	    	if (first_time) {
+	        	//undoHistory.push(temp);
+	        	first_time = false;
+	    	}        	
+	    	if (last_time) {
+	        	undoHistory.push(temp);
+	        	last_time = false;
+    		}
+        }
+	}
 	
 	public void redim_rectangle(Rectangle r, int index, double distanceX, double distanceY) {
 		double r_xMoy = (2*r.getX()+r.getWidth())/2;
@@ -898,6 +938,9 @@ public class Controleur {
 	        }
 	        refresh();
 		}
+		else {
+            Message.setText("Veuillez copier d'abord la forme souhaitée !");
+		}
 	}
 	
 	//Fonction pour couper
@@ -1006,61 +1049,73 @@ public class Controleur {
 	//Fonction appelee lorsqu'on appuie sur le bouton pinceau
 	public void set_pinceau() {
 		this.last_button = Pinceau_Button;
+        Message.setText("Vous pouvez maintenant dessiner avec le pinceau !");
 	}
 	
 	//Fonction appelee lorsqu'on appuie sur le bouton eraser
     public void set_eraser() {
     	this.last_button = Gomme_Button;
+        Message.setText("Vous pouvez maintenant effacer avec la gomme !");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton ligne
     public void set_line() {
     	this.last_button = Ligne_Button;
+        Message.setText("Vous pouvez maintenant dessiner des lignes !");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton rectangle
     public void set_rectangle() {
     	this.last_button = Rectangle_Button;
+        Message.setText("Vous pouvez maintenant dessiner des rectangles !");
     }    
     
     //Fonction appelee lorsqu'on appuie sur le bouton cercle
     public void set_cercle() {
     	this.last_button = Cercle_Button;
+        Message.setText("Vous pouvez maintenant dessiner des cercles !");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton rectangle
     public void set_polygone() {
     	this.last_button = Polygone_Button;
+        Message.setText("Vous pouvez maintenant dessiner des polygones, il suffit de placer les différents sommets du polygone sur le canvas, puis recliquer au centre du premier point placé !");
     }    
     
     //Fonction appelee lorsqu'on appuie sur le bouton sceau
     public void set_sceau() {
     	this.last_button = Sceau_Button;
+        Message.setText("Vous pouvez maintenant remplir des formes avec la couleur souhaitée !");
     }
 
     //Fonction appelee lorsqu'on appuie sur le bouton deplacement
     public void on_Move() {
         this.last_button = Deplacer_Button;
+        Message.setText("Vous pouvez maintenant deplacer des formes, il suffit d'un simple click à l'intérieur de la forme !");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton redimensionner  
     public void set_redim() {
     	this.last_button = Redim_Button;
+        Message.setText("Vous pouvez maintenant redimensionner une forme ! ");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton copier  
     public void set_copier() {
     	this.last_button = Copier_Button;
+        Message.setText("Vous pouvez maintenant coupier un dessin d'une position vers une autre !");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton coller  
     public void set_coller() {
     	this.last_button = Coller_Button;
+        Message.setText("Vous pouvez maintenant coller un dessin copié ou coupé dans un autre endroit!");
     }
     
     //Fonction appelee lorsqu'on appuie sur le bouton couper  
     public void set_couper() {
     	this.last_button = Couper_Button;
+        Message.setText("Vous pouvez maintenant couper un dessin !");
     }
     
     //Fonction de sauvegarde d'image
@@ -1102,39 +1157,74 @@ public class Controleur {
         }		
 	}
 
-	
-	
+	//Fonction qui sauvegarde en format XML
 	@FXML
 	protected void onSave(ActionEvent event) {
-		FileChooser fileChooser = new FileChooser();
-	    fileChooser.setTitle("Save file");
-	    fileChooser.setInitialFileName(".");
-	    fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(
-	               "Scalable Vector Graphics (*.svg)", "*.svg"));
-	    File file = fileChooser.showSaveDialog(Canvas.getScene().getWindow());
-	    if (file != null) {
-	    	// Add .svg extension if none.
-	        if (!file.getName().contains(".")) {
-	        	file = new File(file.getPath() + ".svg");
-	        }
-	        try {
-	            SVGFormat.write(listShapes, file);
-	        } catch (IOException e) {
-	        	e.printStackTrace();
-	        }
+		// Instancier un Jfilechooser
+	    JFileChooser chooser = new JFileChooser();
+		FileNameExtensionFilter xmlfilter = new FileNameExtensionFilter(
+			     "xml files (*.xml)", "xml");
+		chooser.setDialogTitle("Save file");
+		// Appliquer le filtre
+		chooser.setFileFilter(xmlfilter);
+	    int result = chooser.showSaveDialog(null);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+			try {
+				FileOutputStream fos = new FileOutputStream(new File(chooser.getSelectedFile()+".xml"));
+				XMLEncoder encoder = new XMLEncoder(fos);
+				for (Shape s : listShapes) {
+					if (s.getClass()==Line.class) {
+						//Line l = new Line(2,3,4,5,10,Color.BLUE);
+					}
+				}
+				encoder.writeObject(new Line(10,10,20,20));
+				encoder.close();
+				fos.close();
+			}
+			catch(IOException e) {
+				e.printStackTrace();
+			}
 	    }
 	}
 	
-	@FXML 
+	//Fonction qui recupere les donnes d'un fichier XML et les redessine sur le canvas
+	@FXML
 	protected void onLoad(ActionEvent event) {
-		/**FileChooser fileChooser = new FileChooser();
-	    fileChooser.setTitle("Save file");
-	    fileChooser.setInitialFileName(".");
-	    fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(
-	               "Scalable Vector Graphics (*.svg)", "*.svg"));
-	    File file = fileChooser.showSaveDialog(Canvas.getScene().getWindow());
-	    **/
+		// Instancier un Jfilechooser
+		JFileChooser chooser = new JFileChooser();
+		FileNameExtensionFilter xmlfilter = new FileNameExtensionFilter(
+		     "xml files (*.xml)", "xml");
+		chooser.setDialogTitle("Open file");
+		// Appliquer le filtre
+		chooser.setFileFilter(xmlfilter);
+		int result = chooser.showSaveDialog(null);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File f = chooser.getSelectedFile();
+			try {
+				FileInputStream fis = new FileInputStream(f);
+				XMLDecoder decoder = new XMLDecoder(fis);
+				//Recuperer les formes du fichier XML
+				Line l = (Line)decoder.readObject();
+				decoder.close();
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				//Vider undohistory, redohistory, listShapes
+				//Initialiser listShapes avec le fichier XML
+				undoHistory.removeAllElements();
+				redoHistory.removeAllElements();
+				listShapes.clear();
+				listShapes.add(l);
+				refresh();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
+
+
 	
 	@FXML
 	protected void onExit() {

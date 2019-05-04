@@ -36,12 +36,13 @@ public class SVGFormat {
     }
 
    public static void write(ObservableList<Shape> listShapes, Writer writer) throws IOException {
-	   String svgHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" + "<svg\n"
+	   
+	   /*String svgHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" + "<svg\n"
 				+ "    xmlns:svg=\"http://www.w3.org/2000/svg\"\n" + "    xmlns=\"http://www.w3.org/2000/svg\"\n"
 + ">\n";
 	   writer.write(svgHeader);
 	   
-	   
+	   */
 	   /*
 	   Region viewport = (Region) canvas.getParent();
        writer.write(String.format("<svg xmlns=\"http://www.w3.org/2000/svg\"" +
